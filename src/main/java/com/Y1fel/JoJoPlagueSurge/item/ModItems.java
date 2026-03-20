@@ -2,7 +2,9 @@ package com.Y1fel.JoJoPlagueSurge.item;
 
 
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
+import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
 import net.minecraft.world.item.Item;
+import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -16,6 +18,13 @@ public class ModItems {
             ITEMS.register("first_item", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> SECOND_ITEM =
             ITEMS.register("second_item", () -> new Item(new Item.Properties()));
+    public static final RegistryObject<ForgeSpawnEggItem> BLUEHAWAII_SPAWN_EGG =
+            ITEMS.register("bluehawaii_spawn_egg", () -> new ForgeSpawnEggItem(
+                    ModEntities.BLUEHAWAII,
+                    0x4E342E, // 主颜色
+                    0xD7CCC8, // 斑点颜色
+                    new Item.Properties()
+            ));
 
     public static void register(IEventBus bus) {
         ITEMS.register(bus);
