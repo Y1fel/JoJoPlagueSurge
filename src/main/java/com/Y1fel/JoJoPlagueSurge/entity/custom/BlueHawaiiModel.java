@@ -1,7 +1,6 @@
 package com.Y1fel.JoJoPlagueSurge.entity.custom;
 
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
-import com.Y1fel.JoJoPlagueSurge.entity.client.BlueHawaiiEntity;
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.model.GeoModel;
 
