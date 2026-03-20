@@ -1,6 +1,5 @@
 package com.Y1fel.JoJoPlagueSurge.entity.custom;
 
-import com.Y1fel.JoJoPlagueSurge.entity.client.BlueHawaiiEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 

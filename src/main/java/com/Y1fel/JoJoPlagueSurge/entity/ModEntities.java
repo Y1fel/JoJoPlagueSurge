@@ -1,7 +1,7 @@
 package com.Y1fel.JoJoPlagueSurge.entity;
 
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
-import com.Y1fel.JoJoPlagueSurge.entity.client.BlueHawaiiEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.BlueHawaiiEntity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraftforge.eventbus.api.IEventBus;

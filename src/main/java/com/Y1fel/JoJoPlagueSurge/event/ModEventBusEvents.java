@@ -2,7 +2,7 @@ package com.Y1fel.JoJoPlagueSurge.event;
 
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
 import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
-import com.Y1fel.JoJoPlagueSurge.entity.client.BlueHawaiiEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.BlueHawaiiEntity;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
