@@ -1,4 +1,7 @@
 {
   "entity.jojoplaguesurge.bluehawaii": "BlueHawaii",
-  "item.jojoplaguesurge.bluehawaii_spawn_egg": "BlueHawaii Spawn Eggs"
+  "item.jojoplaguesurge.bluehawaii_spawn_egg": "BlueHawaii Spawn Eggs",
+  "item.jojoplaguesurge.duvillager_spawn_egg": "Duwang Villager Spawn Eggs",
+
+  "itemGroup.jojo_tab": "JoJo Tab"
 }

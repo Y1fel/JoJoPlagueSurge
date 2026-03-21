@@ -16,13 +16,13 @@ public class ModEntities {
     public static final RegistryObject<EntityType<BlueHawaiiEntity>> BLUEHAWAII =
             ENTITY_TYPES.register("bluehawaii",
                     ()->EntityType.Builder.of(BlueHawaiiEntity::new, MobCategory.MONSTER)
-                            .sized(0.6F, 1.95F)
+                            .sized(0.6F, 1.8F)
                             .build("bluehawaii"));
     public static final RegistryObject<EntityType<DuVillagerEntity>> DUVILLAGER =
-            ENTITY_TYPES.register("villager1",
+            ENTITY_TYPES.register("duvillager",
                     ()->EntityType.Builder.of(DuVillagerEntity::new,MobCategory.MONSTER)
-                            .sized(0.6F, 1.95F)
-                            .build("villager1"));
+                            .sized(0.6F, 1.8F)
+                            .build("duvillager"));
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
     }

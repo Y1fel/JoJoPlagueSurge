@@ -31,9 +31,6 @@ public class BlueHawaiiEntity extends Monster implements GeoEntity {
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 20.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.25D)
-                .add(Attributes.ATTACK_DAMAGE, 4.0D)
-                .add(Attributes.ATTACK_KNOCKBACK, 0.5D)
                 .add(Attributes.FOLLOW_RANGE, 24.0D);
     }
 
@@ -42,11 +39,7 @@ public class BlueHawaiiEntity extends Monster implements GeoEntity {
         super.registerGoals();
         this.goalSelector.addGoal(1, new FloatGoal(this));
         this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.2D, false));
-        this.goalSelector.addGoal(3, new RandomStrollGoal(this, 1.0D));
         this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
-
-        this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
     }
 
     @Override

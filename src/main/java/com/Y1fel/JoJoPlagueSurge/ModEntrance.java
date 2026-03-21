@@ -3,8 +3,6 @@ package com.Y1fel.JoJoPlagueSurge;
 import com.Y1fel.JoJoPlagueSurge.block.ModBlocks;
 import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
 import com.Y1fel.JoJoPlagueSurge.event.ForgeEvents;
-import com.Y1fel.JoJoPlagueSurge.event.ModClientEvents;
-import com.Y1fel.JoJoPlagueSurge.event.ModEventBusEvents;
 import com.Y1fel.JoJoPlagueSurge.item.ModCreativeModeTabs;
 import com.Y1fel.JoJoPlagueSurge.item.ModItems;
 import com.mojang.logging.LogUtils;
@@ -58,9 +56,11 @@ public class ModEntrance {
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(ModItems.BLUEHAWAII_SPAWN_EGG);
+            event.accept(ModItems.DUVILLAGER_SPAWN_EGG);
         }
         if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS){
             event.accept(ModItems.BLUEHAWAII_SPAWN_EGG);
+            event.accept(ModItems.DUVILLAGER_SPAWN_EGG);
         }
     }
 

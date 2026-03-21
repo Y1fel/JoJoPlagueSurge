@@ -15,11 +15,12 @@ public class ModCreativeModeTabs {
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ModEntrance.MODID);
 
     public static final RegistryObject<CreativeModeTab> TEST_TAB =
-            CREATIVE_MODE_TABS.register("test_tab", () -> CreativeModeTab.builder()
-                    .icon(()->new ItemStack(ModItems.FIRST_ITEM.get()))
-                    .title(Component.translatable("itemGroup.test_tab"))
+            CREATIVE_MODE_TABS.register("jojo_tab", () -> CreativeModeTab.builder()
+                    .icon(()->new ItemStack(ModItems.BLUEHAWAII_SPAWN_EGG.get()))
+                    .title(Component.translatable("itemGroup.jojo_tab"))
                     .displayItems((pParameters, pOutput) -> {
                         pOutput.accept(ModItems.BLUEHAWAII_SPAWN_EGG.get());
+                        pOutput.accept(ModItems.DUVILLAGER_SPAWN_EGG.get());
                     }).build());
     public static void register(IEventBus eventBus) {
         CREATIVE_MODE_TABS.register(eventBus);

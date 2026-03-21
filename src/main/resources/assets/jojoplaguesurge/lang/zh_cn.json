@@ -1,4 +1,7 @@
 {
   "entity.jojoplaguesurge.bluehawaii": "蓝色夏威夷",
-  "item.jojoplaguesurge.bluehawaii_spawn_egg": "蓝色夏威夷刷怪蛋"
+  "item.jojoplaguesurge.bluehawaii_spawn_egg": "蓝色夏威夷刷怪蛋",
+  "item.jojoplaguesurge.duvillager_spawn_egg": "杜王町居民刷怪蛋",
+
+  "itemGroup.jojo_tab": "JoJo模组栏"
 }

@@ -14,22 +14,18 @@ public class ModItems {
     public static final String MOD_ID = ModEntrance.MODID;
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
 
-    public static final RegistryObject<Item> FIRST_ITEM =
-            ITEMS.register("first_item", () -> new Item(new Item.Properties()));
-    public static final RegistryObject<Item> SECOND_ITEM =
-            ITEMS.register("second_item", () -> new Item(new Item.Properties()));
     public static final RegistryObject<ForgeSpawnEggItem> BLUEHAWAII_SPAWN_EGG =
             ITEMS.register("bluehawaii_spawn_egg", () -> new ForgeSpawnEggItem(
                     ModEntities.BLUEHAWAII,
-                    0x1E4470, // 主颜色
-                    0x2B5F89, // 斑点颜色
+                    0x081A49,
+                    0x81B3C9, // 斑点颜色
                     new Item.Properties()
             ));
-    public static final RegistryObject<ForgeSpawnEggItem> VILLAGER1_SPAWN_EGG =
-            ITEMS.register("villager_spawn_egg", () -> new ForgeSpawnEggItem(
+    public static final RegistryObject<ForgeSpawnEggItem> DUVILLAGER_SPAWN_EGG =
+            ITEMS.register("duvillager_spawn_egg", () -> new ForgeSpawnEggItem(
                     ModEntities.DUVILLAGER,
-                    ,
-                    ,
+                    0x3B2A22,
+                    0xD6C3A5,
                     new Item.Properties()
             ));
 

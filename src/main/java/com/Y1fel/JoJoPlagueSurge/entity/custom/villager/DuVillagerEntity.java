@@ -48,8 +48,9 @@ public class DuVillagerEntity extends BaseDuVillager {
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level,
                                         DifficultyInstance difficulty,
                                         MobSpawnType spawnType,
-                                        SpawnGroupData spawnGroupData) {
-        SpawnGroupData data = super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData);
+                                        SpawnGroupData spawnGroupData,
+                                        CompoundTag tag) {
+        SpawnGroupData data = super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData, tag);
 
         if (!this.hasVariantAssigned()) {
             this.setVariant(this.random.nextInt(10) + 1);
