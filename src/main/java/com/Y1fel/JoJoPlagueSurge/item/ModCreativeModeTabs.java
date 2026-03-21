@@ -21,6 +21,8 @@ public class ModCreativeModeTabs {
                     .displayItems((pParameters, pOutput) -> {
                         pOutput.accept(ModItems.BLUEHAWAII_SPAWN_EGG.get());
                         pOutput.accept(ModItems.DUVILLAGER_SPAWN_EGG.get());
+                        pOutput.accept(ModItems.DUWANG_SPAWN_EGG.get());
+                        pOutput.accept(ModItems.BLOODY_TOOTH.get());
                     }).build());
     public static void register(IEventBus eventBus) {
         CREATIVE_MODE_TABS.register(eventBus);

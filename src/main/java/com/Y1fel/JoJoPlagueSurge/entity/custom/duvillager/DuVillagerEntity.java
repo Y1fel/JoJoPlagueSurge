@@ -1,4 +1,4 @@
-package com.Y1fel.JoJoPlagueSurge.entity.custom.villager;
+package com.Y1fel.JoJoPlagueSurge.entity.custom.duvillager;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -31,7 +31,7 @@ public class DuVillagerEntity extends BaseDuVillager {
         return this.entityData.get(VARIANT);
     }
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(@NotNull CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("Variant", this.getVariant());
     }

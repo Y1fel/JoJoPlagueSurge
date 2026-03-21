@@ -2,7 +2,8 @@ package com.Y1fel.JoJoPlagueSurge.entity;
 
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.bluehawaii.BlueHawaiiEntity;
-import com.Y1fel.JoJoPlagueSurge.entity.custom.villager.DuVillagerEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.duvillager.DuVillagerEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.duwang.DuWangEntity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -23,6 +24,11 @@ public class ModEntities {
                     ()->EntityType.Builder.of(DuVillagerEntity::new,MobCategory.MONSTER)
                             .sized(0.6F, 1.8F)
                             .build("duvillager"));
+    public static final RegistryObject<EntityType<DuWangEntity>> DUWANG =
+            ENTITY_TYPES.register("duwang",
+                    ()->EntityType.Builder.of(DuWangEntity::new,MobCategory.MONSTER)
+                            .sized(0.6F, 1.8F)
+                            .build("duwang"));
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
     }

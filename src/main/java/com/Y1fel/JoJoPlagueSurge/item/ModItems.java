@@ -14,6 +14,8 @@ public class ModItems {
     public static final String MOD_ID = ModEntrance.MODID;
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
 
+    public static final RegistryObject<Item> BLOODY_TOOTH =
+            ITEMS.register("bloody_tooth",() -> new Item(new Item.Properties().stacksTo(1)));
     public static final RegistryObject<ForgeSpawnEggItem> BLUEHAWAII_SPAWN_EGG =
             ITEMS.register("bluehawaii_spawn_egg", () -> new ForgeSpawnEggItem(
                     ModEntities.BLUEHAWAII,
@@ -28,7 +30,13 @@ public class ModItems {
                     0xD6C3A5,
                     new Item.Properties()
             ));
-
+    public static final RegistryObject<ForgeSpawnEggItem> DUWANG_SPAWN_EGG =
+            ITEMS.register("duwang_spawn_egg", () -> new ForgeSpawnEggItem(
+                    ModEntities.DUWANG,
+                    0x1A1A1A,
+                    0x8ED6FF,
+                    new Item.Properties()
+            ));
     public static void register(IEventBus bus) {
         ITEMS.register(bus);
     }

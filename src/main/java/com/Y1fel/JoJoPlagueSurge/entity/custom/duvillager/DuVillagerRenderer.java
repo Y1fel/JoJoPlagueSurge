@@ -1,13 +1,11 @@
-package com.Y1fel.JoJoPlagueSurge.entity.custom.villager;
+package com.Y1fel.JoJoPlagueSurge.entity.custom.duvillager;
 
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
 import net.minecraft.client.model.PlayerModel;
-import net.minecraft.client.model.VillagerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class DuVillagerRenderer extends MobRenderer<DuVillagerEntity, PlayerModel<DuVillagerEntity>> {

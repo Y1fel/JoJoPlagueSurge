@@ -55,12 +55,12 @@ public class ModEntrance {
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
-            event.accept(ModItems.BLUEHAWAII_SPAWN_EGG);
-            event.accept(ModItems.DUVILLAGER_SPAWN_EGG);
+            event.accept(ModItems.BLOODY_TOOTH);
         }
         if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS){
             event.accept(ModItems.BLUEHAWAII_SPAWN_EGG);
             event.accept(ModItems.DUVILLAGER_SPAWN_EGG);
+            event.accept(ModItems.DUWANG_SPAWN_EGG);
         }
     }
 

@@ -1,7 +1,6 @@
-package com.Y1fel.JoJoPlagueSurge.entity.custom.villager;
+package com.Y1fel.JoJoPlagueSurge.entity.custom.duvillager;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -9,7 +8,6 @@ import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class BaseDuVillager extends PathfinderMob {
@@ -19,7 +17,9 @@ public abstract class BaseDuVillager extends PathfinderMob {
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 10.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.3D);
+                .add(Attributes.MOVEMENT_SPEED, 0.3D)
+                .add(Attributes.ATTACK_DAMAGE, 4.0D)
+                .add(Attributes.FOLLOW_RANGE, 256.0D);
     }
     @Override
     protected void registerGoals() {

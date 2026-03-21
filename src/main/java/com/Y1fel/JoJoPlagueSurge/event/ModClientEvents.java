@@ -3,7 +3,8 @@ package com.Y1fel.JoJoPlagueSurge.event;
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
 import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.bluehawaii.BlueHawaiiRenderer;
-import com.Y1fel.JoJoPlagueSurge.entity.custom.villager.DuVillagerRenderer;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.duvillager.DuVillagerRenderer;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.duwang.DuWangRenderer;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
@@ -27,5 +28,6 @@ public class ModClientEvents {
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.BLUEHAWAII.get(), BlueHawaiiRenderer::new);
         event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), DuVillagerRenderer::new);
+        event.registerEntityRenderer(ModEntities.DUWANG.get(), DuWangRenderer::new);
     }
 }

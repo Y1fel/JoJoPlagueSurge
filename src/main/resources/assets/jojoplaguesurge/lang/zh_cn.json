@@ -1,7 +1,11 @@
 {
   "entity.jojoplaguesurge.bluehawaii": "蓝色夏威夷",
+  "entity.jojoplaguesurge.duvillager": "杜王町居民",
+  "entity.jojoplaguesurge.duwang": "杜比哇",
   "item.jojoplaguesurge.bluehawaii_spawn_egg": "蓝色夏威夷刷怪蛋",
   "item.jojoplaguesurge.duvillager_spawn_egg": "杜王町居民刷怪蛋",
+  "item.jojoplaguesurge.duwang_spawn_egg": "杜比哇刷怪蛋",
+  "item.jojoplaguesurge.bloody_tooth": "带血的牙齿",
 
   "itemGroup.jojo_tab": "JoJo模组栏"
 }

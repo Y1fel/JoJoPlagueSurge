@@ -1,7 +1,11 @@
 {
   "entity.jojoplaguesurge.bluehawaii": "BlueHawaii",
+  "entity.jojoplaguesurge.duvillager": "Morioh",
+  "entity.jojoplaguesurge.duwang": "DulbyWow",
   "item.jojoplaguesurge.bluehawaii_spawn_egg": "BlueHawaii Spawn Eggs",
-  "item.jojoplaguesurge.duvillager_spawn_egg": "Duwang Villager Spawn Eggs",
+  "item.jojoplaguesurge.duvillager_spawn_egg": "Morioh Villager Spawn Eggs",
+  "item.jojoplaguesurge.duwang_spawn_egg": "DulbyWow Spawn Eggs",
+  "item.jojoplaguesurge.bloody_tooth": "Bloody Tooth",
 
   "itemGroup.jojo_tab": "JoJo Tab"
 }
