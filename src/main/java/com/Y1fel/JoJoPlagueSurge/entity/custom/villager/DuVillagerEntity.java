@@ -22,7 +22,7 @@ public class DuVillagerEntity extends BaseDuVillager {
     @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
-        this.entityData.define(VARIANT,0);
+        this.entityData.define(VARIANT, -1);
     }
     public void setVariant(int variant) {
         this.entityData.set(VARIANT,variant);
@@ -52,7 +52,7 @@ public class DuVillagerEntity extends BaseDuVillager {
         SpawnGroupData data = super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData);
 
         if (!this.hasVariantAssigned()) {
-            this.setVariant(this.random.nextInt(10));
+            this.setVariant(this.random.nextInt(10) + 1);
         }
 
         return data;
@@ -60,6 +60,6 @@ public class DuVillagerEntity extends BaseDuVillager {
 
     private boolean hasVariantAssigned() {
         int v = this.getVariant();
-        return v >= 0 && v < 10;
+        return v >= 1 && v <= 10;
     }
 }

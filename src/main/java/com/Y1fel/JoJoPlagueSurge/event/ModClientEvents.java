@@ -26,25 +26,6 @@ public class ModClientEvents {
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.BLUEHAWAII.get(), BlueHawaiiRenderer::new);
-        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
-                new DuVillagerRenderer<>(context, "Villager1"));
-        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
-                new DuVillagerRenderer<>(context, "Villager2"));
-        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
-                new DuVillagerRenderer<>(context, "Villager3"));
-        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
-                new DuVillagerRenderer<>(context, "Villager4"));
-        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
-                new DuVillagerRenderer<>(context, "Villager5"));
-        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
-                new DuVillagerRenderer<>(context, "Villager6"));
-        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
-                new DuVillagerRenderer<>(context, "Villager7"));
-        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
-                new DuVillagerRenderer<>(context, "Villager8"));
-        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
-                new DuVillagerRenderer<>(context, "Villager9"));
-        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
-                new DuVillagerRenderer<>(context, "Villager10"));
+        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), DuVillagerRenderer::new);
     }
 }
