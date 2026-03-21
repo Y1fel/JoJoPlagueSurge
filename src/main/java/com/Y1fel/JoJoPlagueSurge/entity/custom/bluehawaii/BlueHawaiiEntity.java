@@ -1,4 +1,4 @@
-package com.Y1fel.JoJoPlagueSurge.entity.custom;
+package com.Y1fel.JoJoPlagueSurge.entity.custom.bluehawaii;
 
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;

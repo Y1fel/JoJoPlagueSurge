@@ -2,7 +2,8 @@ package com.Y1fel.JoJoPlagueSurge.event;
 
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
 import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
-import com.Y1fel.JoJoPlagueSurge.entity.custom.BlueHawaiiEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.bluehawaii.BlueHawaiiEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.villager.DuVillagerEntity;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -13,5 +14,6 @@ public class ModEventBusEvents {
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(ModEntities.BLUEHAWAII.get(), BlueHawaiiEntity.createAttributes().build());
+        event.put(ModEntities.DUVILLAGER.get(), DuVillagerEntity.createAttributes().build());
     }
 }

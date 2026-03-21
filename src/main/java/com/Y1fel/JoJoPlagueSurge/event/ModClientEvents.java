@@ -2,7 +2,8 @@ package com.Y1fel.JoJoPlagueSurge.event;
 
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
 import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
-import com.Y1fel.JoJoPlagueSurge.entity.custom.BlueHawaiiRenderer;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.bluehawaii.BlueHawaiiRenderer;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.villager.DuVillagerRenderer;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
@@ -25,5 +26,25 @@ public class ModClientEvents {
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.BLUEHAWAII.get(), BlueHawaiiRenderer::new);
+        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
+                new DuVillagerRenderer<>(context, "Villager1"));
+        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
+                new DuVillagerRenderer<>(context, "Villager2"));
+        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
+                new DuVillagerRenderer<>(context, "Villager3"));
+        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
+                new DuVillagerRenderer<>(context, "Villager4"));
+        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
+                new DuVillagerRenderer<>(context, "Villager5"));
+        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
+                new DuVillagerRenderer<>(context, "Villager6"));
+        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
+                new DuVillagerRenderer<>(context, "Villager7"));
+        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
+                new DuVillagerRenderer<>(context, "Villager8"));
+        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
+                new DuVillagerRenderer<>(context, "Villager9"));
+        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context ->
+                new DuVillagerRenderer<>(context, "Villager10"));
     }
 }

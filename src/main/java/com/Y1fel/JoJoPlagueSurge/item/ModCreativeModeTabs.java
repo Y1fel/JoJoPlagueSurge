@@ -19,9 +19,7 @@ public class ModCreativeModeTabs {
                     .icon(()->new ItemStack(ModItems.FIRST_ITEM.get()))
                     .title(Component.translatable("itemGroup.test_tab"))
                     .displayItems((pParameters, pOutput) -> {
-                        pOutput.accept(ModItems.FIRST_ITEM.get());
-                        pOutput.accept(ModItems.SECOND_ITEM.get());
-                        pOutput.accept(ModBlocks.FIRST_BLOCK.get());
+                        pOutput.accept(ModItems.BLUEHAWAII_SPAWN_EGG.get());
                     }).build());
     public static void register(IEventBus eventBus) {
         CREATIVE_MODE_TABS.register(eventBus);

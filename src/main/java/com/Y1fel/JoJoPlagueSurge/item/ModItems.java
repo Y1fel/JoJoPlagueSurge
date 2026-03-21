@@ -21,8 +21,15 @@ public class ModItems {
     public static final RegistryObject<ForgeSpawnEggItem> BLUEHAWAII_SPAWN_EGG =
             ITEMS.register("bluehawaii_spawn_egg", () -> new ForgeSpawnEggItem(
                     ModEntities.BLUEHAWAII,
-                    0x4E342E, // 主颜色
-                    0xD7CCC8, // 斑点颜色
+                    0x1E4470, // 主颜色
+                    0x2B5F89, // 斑点颜色
+                    new Item.Properties()
+            ));
+    public static final RegistryObject<ForgeSpawnEggItem> VILLAGER1_SPAWN_EGG =
+            ITEMS.register("villager_spawn_egg", () -> new ForgeSpawnEggItem(
+                    ModEntities.DUVILLAGER,
+                    ,
+                    ,
                     new Item.Properties()
             ));
 

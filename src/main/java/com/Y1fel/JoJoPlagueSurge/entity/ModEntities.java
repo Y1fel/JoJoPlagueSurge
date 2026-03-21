@@ -1,7 +1,8 @@
 package com.Y1fel.JoJoPlagueSurge.entity;
 
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
-import com.Y1fel.JoJoPlagueSurge.entity.custom.BlueHawaiiEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.bluehawaii.BlueHawaiiEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.villager.DuVillagerEntity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -17,6 +18,11 @@ public class ModEntities {
                     ()->EntityType.Builder.of(BlueHawaiiEntity::new, MobCategory.MONSTER)
                             .sized(0.6F, 1.95F)
                             .build("bluehawaii"));
+    public static final RegistryObject<EntityType<DuVillagerEntity>> DUVILLAGER =
+            ENTITY_TYPES.register("villager1",
+                    ()->EntityType.Builder.of(DuVillagerEntity::new,MobCategory.MONSTER)
+                            .sized(0.6F, 1.95F)
+                            .build("villager1"));
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
     }
