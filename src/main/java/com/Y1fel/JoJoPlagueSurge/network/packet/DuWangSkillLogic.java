@@ -1,5 +1,7 @@
 package com.Y1fel.JoJoPlagueSurge.network.packet;
 
+import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.trackingtornado.TrackingTornadoEntity;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -12,6 +14,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -21,6 +25,7 @@ public class DuWangSkillLogic {
 
     private static final int SKILL_1_COOLDOWN_TICKS = 20 * 180;
     private static final int SKILL_2_COOLDOWN_TICKS = 20 * 60;
+    private static final Logger log = LoggerFactory.getLogger(DuWangSkillLogic.class);
 
     private DuWangSkillLogic() {
     }
@@ -58,19 +63,22 @@ public class DuWangSkillLogic {
         broadcastToOpTeam(player, "追踪飓风");
 
         ServerLevel level = player.serverLevel();
-        Vec3 start = player.position().add(0, player.getEyeHeight(), 0);
-        Vec3 end = target.position().add(0, target.getBbHeight() * 0.5, 0);
-        spawnHurricaneTrail(level, start, end);
 
-        AABB area = new AABB(target.blockPosition()).inflate(5.0D);
-        List<ServerPlayer> nearby = level.getEntitiesOfClass(ServerPlayer.class, area);
-        for (ServerPlayer nearbyPlayer : nearby) {
-            nearbyPlayer.addEffect(new MobEffectInstance(MobEffects.WITHER, 20 * 6, 0));
+        TrackingTornadoEntity tornado = ModEntities.TRACKING_TORNADO.get().create(level);
+        if (tornado == null) {
+            return;
         }
+        Vec3 spawnPos = player.getEyePosition().add(player.getLookAngle().scale(1.0D));
+        tornado.moveTo(spawnPos.x, spawnPos.y - 0.3D, spawnPos.z, player.getYRot(), player.getXRot());
+        tornado.setOwner(player);
+        tornado.setTarget(target);
 
-        level.sendParticles(net.minecraft.core.particles.ParticleTypes.CLOUD,
-                target.getX(), target.getY() + 1.0D, target.getZ(),
-                80, 1.8D, 1.2D, 1.8D, 0.02D);
+        Vec3 initialVelocity = player.getLookAngle().scale(0.3D);
+        tornado.setDeltaMovement(initialVelocity);
+        level.addFreshEntity(tornado);
+        //level.sendParticles(net.minecraft.core.particles.ParticleTypes.CLOUD,
+        //        target.getX(), target.getY() + 1.0D, target.getZ(),
+        //        80, 1.8D, 1.2D, 1.8D, 0.02D);
     }
 
     private static void useHurricaneBarrier(ServerPlayer player) {
