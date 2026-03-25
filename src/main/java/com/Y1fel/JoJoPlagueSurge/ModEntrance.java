@@ -5,6 +5,7 @@ import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
 import com.Y1fel.JoJoPlagueSurge.event.ForgeEvents;
 import com.Y1fel.JoJoPlagueSurge.item.ModCreativeModeTabs;
 import com.Y1fel.JoJoPlagueSurge.item.ModItems;
+import com.Y1fel.JoJoPlagueSurge.network.ModNetwork;
 import com.mojang.logging.LogUtils;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.level.block.Blocks;
@@ -43,6 +44,7 @@ public class ModEntrance {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
+        ModNetwork.register();
         LOGGER.info("HELLO FROM COMMON SETUP");
 
         if (Config.logDirtBlock) {
