@@ -6,6 +6,8 @@
   "item.jojoplaguesurge.duvillager_spawn_egg": "Morioh Villager Spawn Eggs",
   "item.jojoplaguesurge.duwang_spawn_egg": "DulbyWow Spawn Eggs",
   "item.jojoplaguesurge.bloody_tooth": "Bloody Tooth",
-
-  "itemGroup.jojo_tab": "JoJo Tab"
+  "itemGroup.jojo_tab": "JoJo Tab",
+  "key.categories.jojoplaguesurge": "JoJo Plague Surge",
+  "key.jojoplaguesurge.duwang_skill_1": "DuWang Skill: Tracking Hurricane",
+  "key.jojoplaguesurge.duwang_skill_2": "DuWang Skill: Hurricane Barrier"
 }
