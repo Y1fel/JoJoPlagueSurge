@@ -25,18 +25,16 @@ import java.util.List;
  */
 @Mod.EventBusSubscriber(modid = ModEntrance.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class DuWangSkillHudOverlay {
-    private static final int SKILL_SLOT_SIZE = 20;
-    private static final int PANEL_PADDING = 6;
-    private static final int PANEL_HEIGHT = 42;
-    private static final int SLOT_GAP = 8;
-    private static final int PANEL_BORDER = 0xCC404040;
-    private static final int PANEL_BG = 0x99000000;
-    private static final int SLOT_BG = 0xCC111111;
-    private static final int SELECTED_SLOT = 0xCC2D8CF0;
-    private static final int NORMAL_SLOT = 0x88484848;
-    private static final int KEYCAP_BG = 0xCC0A0A0A;
-    private static final int KEYCAP_BORDER = 0xFFB7B7B7;
-    private static final int ICON_Y_OFFSET = 1;
+    private static final int SKILL_SLOT_SIZE = 18;
+    private static final int HUD_TOP = 22;
+    private static final int HUD_RIGHT = 12;
+    private static final int ROW_GAP = 4;
+    private static final int KEY_TEXT_WIDTH = 16;
+    private static final int ROW_BG = 0x66E2EAF3;
+    private static final int ROW_BORDER = 0x88FFFFFF;
+    private static final int SLOT_BG = 0x66AEB8C2;
+    private static final int SELECTED_SLOT = 0xCC4A90E2;
+    private static final int NORMAL_SLOT = 0x66FFFFFF;
 
     private static int selectedSkillId = DuWangSkillCatalog.STAND_ASSAULT_ID;
     private static long skill1LastTriggerTick = Long.MIN_VALUE;
@@ -72,18 +70,14 @@ public class DuWangSkillHudOverlay {
         }
 
         GuiGraphics gui = event.getGuiGraphics();
-        int panelWidth = (SKILL_SLOT_SIZE * 2) + SLOT_GAP + (PANEL_PADDING * 2);
-        int panelX = (event.getWindow().getGuiScaledWidth() - panelWidth) / 2;
-        int panelY = event.getWindow().getGuiScaledHeight() - 58;
-        int firstSlotX = panelX + PANEL_PADDING;
-        int secondSlotX = firstSlotX + SKILL_SLOT_SIZE + SLOT_GAP;
-        int slotY = panelY + PANEL_PADDING;
-
-        gui.fill(panelX - 1, panelY - 1, panelX + panelWidth + 1, panelY + PANEL_HEIGHT + 1, PANEL_BORDER);
-        gui.fill(panelX, panelY, panelX + panelWidth, panelY + PANEL_HEIGHT, PANEL_BG);
+        int rowWidth = KEY_TEXT_WIDTH + SKILL_SLOT_SIZE + 10;
+        int rowHeight = SKILL_SLOT_SIZE + 4;
+        int baseX = event.getWindow().getGuiScaledWidth() - HUD_RIGHT - rowWidth;
+        int firstRowY = HUD_TOP;
+        int secondRowY = firstRowY + rowHeight + ROW_GAP;
 
         renderSkillSlot(
-                gui, mc, firstSlotX, slotY,
+                gui, mc, baseX, firstRowY,
                 DuWangSkillCatalog.STAND_ASSAULT_ID,
                 new ItemStack(ModItems.BLOODY_TOOTH.get()),
                 "V",
@@ -91,7 +85,7 @@ public class DuWangSkillHudOverlay {
                 DuWangSkillCatalog.STAND_ASSAULT_COOLDOWN_TICKS
         );
         renderSkillSlot(
-                gui, mc, secondSlotX, slotY,
+                gui, mc, baseX, secondRowY,
                 DuWangSkillCatalog.HURRICANE_BARRIER_ID,
                 new ItemStack(ModItems.DUWANG_SPAWN_EGG.get()),
                 "B",
@@ -103,21 +97,28 @@ public class DuWangSkillHudOverlay {
     private static void renderSkillSlot(
             GuiGraphics gui,
             Minecraft mc,
-            int slotX,
-            int slotY,
+            int rowX,
+            int rowY,
             int skillId,
             ItemStack icon,
             String keyText,
             long lastTriggerTick,
             int cooldownTicks
     ) {
+        int rowWidth = KEY_TEXT_WIDTH + SKILL_SLOT_SIZE + 10;
+        int rowHeight = SKILL_SLOT_SIZE + 4;
+        int slotX = rowX + rowWidth - SKILL_SLOT_SIZE - 3;
+        int slotY = rowY + 2;
         boolean selected = selectedSkillId == skillId;
+        gui.fill(rowX - 1, rowY - 1, rowX + rowWidth + 1, rowY + rowHeight + 1, ROW_BORDER);
+        gui.fill(rowX, rowY, rowX + rowWidth, rowY + rowHeight, ROW_BG);
+
         int borderColor = selected ? SELECTED_SLOT : NORMAL_SLOT;
         gui.fill(slotX - 1, slotY - 1, slotX + SKILL_SLOT_SIZE + 1, slotY + SKILL_SLOT_SIZE + 1, borderColor);
         gui.fill(slotX, slotY, slotX + SKILL_SLOT_SIZE, slotY + SKILL_SLOT_SIZE, SLOT_BG);
 
         RenderSystem.enableBlend();
-        gui.renderItem(icon, slotX + 2, slotY + ICON_Y_OFFSET + 2);
+        gui.renderItem(icon, slotX + 1, slotY + 1);
         RenderSystem.disableBlend();
 
         float remainRatio = getCooldownRemainRatio(mc, lastTriggerTick, cooldownTicks);
@@ -131,15 +132,8 @@ public class DuWangSkillHudOverlay {
             gui.drawString(mc.font, remainText, textX, textY, 0xFFE7E7E7, true);
         }
 
-        int keycapWidth = 12;
-        int keycapHeight = 9;
-        int keycapX = slotX + SKILL_SLOT_SIZE - keycapWidth;
-        int keycapY = slotY + SKILL_SLOT_SIZE - keycapHeight;
-        gui.fill(keycapX - 1, keycapY - 1, keycapX + keycapWidth + 1, keycapY + keycapHeight + 1, KEYCAP_BORDER);
-        gui.fill(keycapX, keycapY, keycapX + keycapWidth, keycapY + keycapHeight, KEYCAP_BG);
-
-        int keyTextX = keycapX + (keycapWidth - mc.font.width(keyText)) / 2;
-        gui.drawString(mc.font, keyText, keyTextX, keycapY + 1, 0xFFFFFFFF, false);
+        int keyTextX = rowX + 4;
+        gui.drawString(mc.font, keyText, keyTextX, rowY + 6, 0xFFDEE6EF, false);
     }
 
     private static boolean hasOwnedStand(LocalPlayer player) {

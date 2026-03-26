@@ -2,6 +2,7 @@ package com.Y1fel.JoJoPlagueSurge.network.packet;
 
 import com.Y1fel.JoJoPlagueSurge.Config;
 import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.duwang.DuWangEntity;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.trackingtornado.TrackingTornadoEntity;
 import com.Y1fel.JoJoPlagueSurge.skill.DuWangSkillCatalog;
 import com.mojang.brigadier.StringReader;
@@ -16,9 +17,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
 
@@ -68,17 +66,26 @@ public class DuWangSkillLogic {
         broadcastToOpTeam(player, "追踪飓风");
 
         ServerLevel level = player.serverLevel();
+        DuWangEntity casterStand = findOwnedStand(player);
+        if (casterStand == null) {
+            player.displayClientMessage(Component.literal("未找到已召唤的替身，无法释放追踪飓风"), true);
+            return;
+        }
 
         TrackingTornadoEntity tornado = ModEntities.TRACKING_TORNADO.get().create(level);
         if (tornado == null) {
             return;
         }
-        Vec3 spawnPos = player.getEyePosition().add(player.getLookAngle().scale(1.0D));
-        tornado.moveTo(spawnPos.x, spawnPos.y - 0.3D, spawnPos.z, player.getYRot(), player.getXRot());
+        Vec3 spawnPos = casterStand.position().add(0.0D, casterStand.getBbHeight() * 0.65D, 0.0D);
+        Vec3 launchDirection = casterStand.getLookAngle();
+        if (launchDirection.lengthSqr() < 1.0E-5D) {
+            launchDirection = player.getLookAngle();
+        }
+        tornado.moveTo(spawnPos.x, spawnPos.y, spawnPos.z, casterStand.getYRot(), casterStand.getXRot());
         tornado.setOwner(player);
         tornado.setTarget(target);
 
-        Vec3 initialVelocity = player.getLookAngle().scale(0.3D);
+        Vec3 initialVelocity = launchDirection.normalize().scale(0.3D);
         tornado.setDeltaMovement(initialVelocity);
         level.addFreshEntity(tornado);
         //level.sendParticles(net.minecraft.core.particles.ParticleTypes.CLOUD,
@@ -135,5 +142,27 @@ public class DuWangSkillLogic {
 
         CommandSourceStack source = user.server.createCommandSourceStack();
         user.server.getCommands().performPrefixedCommand(source, "tellraw @a[team=op] " + json);
+    }
+
+    private static DuWangEntity findOwnedStand(ServerPlayer player) {
+        List<DuWangEntity> stands = player.serverLevel().getEntitiesOfClass(
+                DuWangEntity.class,
+                player.getBoundingBox().inflate(64.0D),
+                stand -> stand.isAlive() && stand.isOwnedBy(player)
+        );
+        if (stands.isEmpty()) {
+            return null;
+        }
+        DuWangEntity nearest = stands.get(0);
+        double nearestDist = nearest.distanceToSqr(player);
+        for (int i = 1; i < stands.size(); i++) {
+            DuWangEntity current = stands.get(i);
+            double dist = current.distanceToSqr(player);
+            if (dist < nearestDist) {
+                nearest = current;
+                nearestDist = dist;
+            }
+        }
+        return nearest;
     }
 }
