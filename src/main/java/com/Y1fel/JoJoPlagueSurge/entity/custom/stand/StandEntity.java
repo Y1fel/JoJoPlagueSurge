@@ -23,7 +23,7 @@ import java.util.UUID;
 
 /**
  * 基础替身实体：负责绑定主人、跟随和基础生命周期。
- * 目标是让所有替身（DuWang / BlueHawaii）共享同一套核心行为，接近 JCraft 的“替身附身”体验。
+ * 目标是让所有替身（DuWang / BlueHawaii）共享同一套核心行为，统一“替身附身”体验。
  */
 public abstract class StandEntity extends Monster {
     private static final EntityDataAccessor<Optional<UUID>> OWNER_UUID =
