@@ -29,6 +29,8 @@ import java.util.List;
 public class DuWangSkillLogic {
     private static final String SKILL_1_LAST_USE = "jojoplaguesurge.duwang_skill_1_last_use";
     private static final String SKILL_2_LAST_USE = "jojoplaguesurge.duwang_skill_2_last_use";
+    private static final int SKILL_1_COOLDOWN_TICKS = 20 * 5;
+    private static final int SKILL_2_COOLDOWN_TICKS = 20 * 60;
 
     private DuWangSkillLogic() {
     }
