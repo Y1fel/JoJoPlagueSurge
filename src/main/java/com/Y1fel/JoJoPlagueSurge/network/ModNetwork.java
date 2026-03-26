@@ -1,6 +1,7 @@
 package com.Y1fel.JoJoPlagueSurge.network;
 
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
+import com.Y1fel.JoJoPlagueSurge.network.packet.C2SToggleStandPacket;
 import com.Y1fel.JoJoPlagueSurge.network.packet.C2SUseDuWangSkillPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;
@@ -23,5 +24,11 @@ public class ModNetwork {
                 C2SUseDuWangSkillPacket::encode,
                 C2SUseDuWangSkillPacket::decode,
                 C2SUseDuWangSkillPacket::handle);
+        CHANNEL.registerMessage(id++,
+                C2SToggleStandPacket.class,
+                C2SToggleStandPacket::encode,
+                C2SToggleStandPacket::decode,
+                C2SToggleStandPacket::handle);
+
     }
 }
