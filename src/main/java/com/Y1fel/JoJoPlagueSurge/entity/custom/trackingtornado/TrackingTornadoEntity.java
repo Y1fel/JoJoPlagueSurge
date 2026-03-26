@@ -12,6 +12,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -21,7 +22,6 @@ import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.core.animation.AnimationController;
-import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
@@ -31,7 +31,6 @@ import java.util.UUID;
 
 public class TrackingTornadoEntity extends Entity implements GeoEntity{
     private int lifeTicks;
-    private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("Idle");
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     private static final EntityDataAccessor<Optional<UUID>> TARGET_UUID =
@@ -50,7 +49,7 @@ public class TrackingTornadoEntity extends Entity implements GeoEntity{
         this.entityData.define(OWNER_UUID, Optional.empty());
     }
 
-    public void setTarget(Player target) {
+    public void setTarget(LivingEntity target) {
         this.entityData.set(TARGET_UUID, Optional.of(target.getUUID()));
     }
 
@@ -58,14 +57,14 @@ public class TrackingTornadoEntity extends Entity implements GeoEntity{
         this.entityData.set(OWNER_UUID, Optional.of(owner.getUUID()));
     }
     @Nullable
-    public Player getTargetPlayer() {
+    public LivingEntity getTargetEntity() {
         Optional<UUID> optional = this.entityData.get(TARGET_UUID);
         if (optional.isEmpty() || !(this.level() instanceof ServerLevel serverLevel)) {
             return null;
         }
 
         Entity entity = serverLevel.getEntity(optional.get());
-        return entity instanceof Player player ? player : null;
+        return entity instanceof LivingEntity livingEntity ? livingEntity : null;
     }
 
     @Override
@@ -82,7 +81,7 @@ public class TrackingTornadoEntity extends Entity implements GeoEntity{
             return;
         }
 
-        Player target = getTargetPlayer();
+        LivingEntity target = getTargetEntity();
         if (target == null || !target.isAlive()) {
             this.discard();
             return;
@@ -110,7 +109,7 @@ public class TrackingTornadoEntity extends Entity implements GeoEntity{
         }
     }
 
-    private void onHitTarget(Player target) {
+    private void onHitTarget(LivingEntity target) {
         target.hurt(this.damageSources().magic(), 6.0F);
         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 2));
         this.discard();
