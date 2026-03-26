@@ -31,6 +31,10 @@ public class Config
             .comment("What you want the introduction message to be for the magic number")
             .define("magicNumberIntroduction", "The magic number is... ");
 
+    public static final ForgeConfigSpec.BooleanValue DUWANG_SKILL_1_ALLOW_ANY_LIVING_TARGET_FOR_TEST = BUILDER
+            .comment("Testing switch: when enabled, DuWang skill 1 can lock any living entity instead of players only")
+            .define("duwangSkill1AllowAnyLivingTargetForTest", false);
+
     // a list of strings that are treated as resource locations for items
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> ITEM_STRINGS = BUILDER
             .comment("A list of items to log on common setup.")
@@ -41,6 +45,7 @@ public class Config
     public static boolean logDirtBlock;
     public static int magicNumber;
     public static String magicNumberIntroduction;
+    public static boolean duWangSkill1AllowAnyLivingTargetForTest;
     public static Set<Item> items;
 
     private static boolean validateItemName(final Object obj)
@@ -54,6 +59,7 @@ public class Config
         logDirtBlock = LOG_DIRT_BLOCK.get();
         magicNumber = MAGIC_NUMBER.get();
         magicNumberIntroduction = MAGIC_NUMBER_INTRODUCTION.get();
+        duWangSkill1AllowAnyLivingTargetForTest = DUWANG_SKILL_1_ALLOW_ANY_LIVING_TARGET_FOR_TEST.get();
 
         // convert the list of strings into a set of items
         items = ITEM_STRINGS.get().stream()

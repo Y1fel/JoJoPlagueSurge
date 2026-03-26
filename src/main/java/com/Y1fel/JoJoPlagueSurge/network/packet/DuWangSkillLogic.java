@@ -1,5 +1,6 @@
 package com.Y1fel.JoJoPlagueSurge.network.packet;
 
+import com.Y1fel.JoJoPlagueSurge.Config;
 import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.trackingtornado.TrackingTornadoEntity;
 import net.minecraft.commands.CommandSourceStack;
@@ -9,15 +10,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 public class DuWangSkillLogic {
     private static final String SKILL_1_LAST_USE = "jojoplaguesurge.duwang_skill_1_last_use";
@@ -25,8 +23,6 @@ public class DuWangSkillLogic {
 
     private static final int SKILL_1_COOLDOWN_TICKS = 20 * 180;
     private static final int SKILL_2_COOLDOWN_TICKS = 20 * 60;
-    private static final Logger log = LoggerFactory.getLogger(DuWangSkillLogic.class);
-
     private DuWangSkillLogic() {
     }
 
@@ -53,9 +49,12 @@ public class DuWangSkillLogic {
             return;
         }
 
-        Player target = findLookTargetPlayer(player);
+        LivingEntity target = findLookTarget(player);
         if (target == null) {
-            player.displayClientMessage(Component.literal("请先把准星对准要攻击的玩家"), true);
+            String tip = Config.duWangSkill1AllowAnyLivingTargetForTest
+                    ? "请先把准星对准要攻击的生物"
+                    : "请先把准星对准要攻击的玩家";
+            player.displayClientMessage(Component.literal(tip), true);
             return;
         }
 
@@ -103,11 +102,12 @@ public class DuWangSkillLogic {
                 120, 1.6D, 1.0D, 1.6D, 0.06D);
     }
 
-    private static Player findLookTargetPlayer(ServerPlayer player) {
+    private static LivingEntity findLookTarget(ServerPlayer player) {
         double maxDistance = 256.0D;
         Vec3 eyePos = player.getEyePosition();
         Vec3 look = player.getLookAngle();
         Vec3 end = eyePos.add(look.scale(maxDistance));
+        boolean allowAnyLiving = Config.duWangSkill1AllowAnyLivingTargetForTest;
 
         AABB searchBox = player.getBoundingBox().expandTowards(look.scale(maxDistance)).inflate(2.0D);
         EntityHitResult hitResult = net.minecraft.world.entity.projectile.ProjectileUtil.getEntityHitResult(
@@ -115,7 +115,15 @@ public class DuWangSkillLogic {
                 eyePos,
                 end,
                 searchBox,
-                entity -> entity instanceof Player && entity != player,
+                entity -> {
+                    if (!(entity instanceof LivingEntity living) || entity == player || !living.isAlive()) {
+                        return false;
+                    }
+                    if (allowAnyLiving) {
+                        return true;
+                    }
+                    return entity instanceof Player;
+                },
                 1.0F
         );
 
@@ -124,36 +132,11 @@ public class DuWangSkillLogic {
         }
 
         Entity hitEntity = hitResult.getEntity();
-        if (hitEntity instanceof Player targetPlayer) {
-            return targetPlayer;
+        if (hitEntity instanceof LivingEntity targetEntity && targetEntity.isAlive()) {
+            return targetEntity;
         }
 
         return null;
-    }
-
-    private static void spawnHurricaneTrail(ServerLevel level, Vec3 start, Vec3 end) {
-        Vec3 delta = end.subtract(start);
-        double distance = delta.length();
-        if (distance < 0.1D) {
-            return;
-        }
-
-        Vec3 normal = delta.normalize();
-        int points = Math.max(12, (int) (distance * 3));
-
-        for (int i = 0; i <= points; i++) {
-            double t = i / (double) points;
-            Vec3 base = start.add(normal.scale(distance * t));
-            double angle = t * Math.PI * 8;
-            double radius = 0.45D;
-
-            double swirlX = Math.cos(angle) * radius;
-            double swirlZ = Math.sin(angle) * radius;
-
-            level.sendParticles(net.minecraft.core.particles.ParticleTypes.CLOUD,
-                    base.x + swirlX, base.y, base.z + swirlZ,
-                    2, 0.02D, 0.02D, 0.02D, 0.001D);
-        }
     }
 
     private static void broadcastToOpTeam(ServerPlayer user, String skillName) {
