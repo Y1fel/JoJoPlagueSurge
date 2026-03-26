@@ -19,6 +19,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraftforge.common.util.FakePlayer;
 
 import java.util.List;
@@ -48,7 +50,7 @@ public class DuWangSkillLogic {
         }
     }
 
-    private static void useTrackingHurricane(ServerPlayer player) {
+    private static void commandStandAttack(ServerPlayer player) {
         long now = player.level().getGameTime();
         long last = player.getPersistentData().getLong(SKILL_1_LAST_USE);
         long elapsed = now - last;
@@ -71,7 +73,9 @@ public class DuWangSkillLogic {
         player.getPersistentData().putLong(SKILL_1_LAST_USE, now);
         broadcastToOpTeam(player, DuWangSkillCatalog.displayNameZh(DuWangSkillCatalog.STAND_ASSAULT_ID));
 
-        ServerLevel level = player.serverLevel();
+        player.displayClientMessage(Component.literal("替身已锁定目标: " + target.getName().getString()), true);
+        broadcastToOpTeam(player, DuWangSkillCatalog.displayNameZh(DuWangSkillCatalog.STAND_ASSAULT_ID));
+    }
 
         TrackingTornadoEntity tornado = ModEntities.TRACKING_TORNADO.get().create(level);
         if (tornado == null) {
