@@ -155,6 +155,8 @@ dependencies {
     implementation("com.eliotlash.mclib:mclib:20")
 
     implementation fg.deobf("curse.maven:architectury-api-419699:5137938")
+    // JCraft: Eyes of Ender (Forge 1.20.1) for compatibility bridge calls.
+    implementation fg.deobf("curse.maven:jcraft-eyes-of-ender-854974:6941057")
     // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}")
