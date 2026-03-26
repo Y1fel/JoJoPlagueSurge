@@ -3,7 +3,11 @@ package com.Y1fel.JoJoPlagueSurge.network.packet;
 import com.Y1fel.JoJoPlagueSurge.Config;
 import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.trackingtornado.TrackingTornadoEntity;
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.selector.EntitySelector;
+import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,11 +21,14 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
 
+import java.util.List;
+
+
 public class DuWangSkillLogic {
     private static final String SKILL_1_LAST_USE = "jojoplaguesurge.duwang_skill_1_last_use";
     private static final String SKILL_2_LAST_USE = "jojoplaguesurge.duwang_skill_2_last_use";
 
-    private static final int SKILL_1_COOLDOWN_TICKS = 20 * 180;
+    private static final int SKILL_1_COOLDOWN_TICKS = 20 * 5;
     private static final int SKILL_2_COOLDOWN_TICKS = 20 * 60;
     private DuWangSkillLogic() {
     }
@@ -42,6 +49,7 @@ public class DuWangSkillLogic {
         long now = player.level().getGameTime();
         long last = player.getPersistentData().getLong(SKILL_1_LAST_USE);
         long elapsed = now - last;
+        Config.duWangSkill1AllowAnyLivingTargetForTest=true;
 
         if (elapsed < SKILL_1_COOLDOWN_TICKS) {
             long remainSeconds = (SKILL_1_COOLDOWN_TICKS - elapsed + 19) / 20;
@@ -49,12 +57,10 @@ public class DuWangSkillLogic {
             return;
         }
 
-        LivingEntity target = findLookTarget(player);
-        if (target == null) {
-            String tip = Config.duWangSkill1AllowAnyLivingTargetForTest
-                    ? "请先把准星对准要攻击的生物"
-                    : "请先把准星对准要攻击的玩家";
-            player.displayClientMessage(Component.literal(tip), true);
+        String selector = "@e[tag=duwang_target,limit=1,sort=nearest]";
+        LivingEntity target = findLookTarget(player,selector);
+        if(target==null){
+            player.displayClientMessage(Component.literal("No target found!"), true);
             return;
         }
 
@@ -102,40 +108,22 @@ public class DuWangSkillLogic {
                 120, 1.6D, 1.0D, 1.6D, 0.06D);
     }
 
-    private static LivingEntity findLookTarget(ServerPlayer player) {
-        double maxDistance = 256.0D;
-        Vec3 eyePos = player.getEyePosition();
-        Vec3 look = player.getLookAngle();
-        Vec3 end = eyePos.add(look.scale(maxDistance));
-        boolean allowAnyLiving = Config.duWangSkill1AllowAnyLivingTargetForTest;
+    private static LivingEntity findLookTarget(ServerPlayer player, String selector) {
+        try{
+            StringReader reader = new StringReader(selector);
+            EntitySelectorParser parser = new EntitySelectorParser(reader,true);
+            EntitySelector entitySelector = parser.parse();
 
-        AABB searchBox = player.getBoundingBox().expandTowards(look.scale(maxDistance)).inflate(2.0D);
-        EntityHitResult hitResult = net.minecraft.world.entity.projectile.ProjectileUtil.getEntityHitResult(
-                player,
-                eyePos,
-                end,
-                searchBox,
-                entity -> {
-                    if (!(entity instanceof LivingEntity living) || entity == player || !living.isAlive()) {
-                        return false;
-                    }
-                    if (allowAnyLiving) {
-                        return true;
-                    }
-                    return entity instanceof Player;
-                },
-                1.0F
-        );
+            List<? extends Entity> entities = entitySelector.findEntities(player.createCommandSourceStack());
+            for(Entity entity : entities){
+                if(entity instanceof LivingEntity living && living.isAlive() && entity!=player ){
+                    return living;
+                }
+            }
 
-        if (hitResult == null) {
-            return null;
+        }catch (CommandSyntaxException e){
+            player.displayClientMessage(Component.literal("Invalid Selector"), true);
         }
-
-        Entity hitEntity = hitResult.getEntity();
-        if (hitEntity instanceof LivingEntity targetEntity && targetEntity.isAlive()) {
-            return targetEntity;
-        }
-
         return null;
     }
 
