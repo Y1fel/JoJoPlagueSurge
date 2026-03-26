@@ -3,6 +3,7 @@ package com.Y1fel.JoJoPlagueSurge.network.packet;
 import com.Y1fel.JoJoPlagueSurge.Config;
 import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.trackingtornado.TrackingTornadoEntity;
+import com.Y1fel.JoJoPlagueSurge.skill.DuWangSkillCatalog;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
@@ -27,8 +28,8 @@ public class DuWangSkillLogic {
     private static final String SKILL_1_LAST_USE = "jojoplaguesurge.duwang_skill_1_last_use";
     private static final String SKILL_2_LAST_USE = "jojoplaguesurge.duwang_skill_2_last_use";
 
-    private static final int SKILL_1_COOLDOWN_TICKS = 20 * 10;
-    private static final int SKILL_2_COOLDOWN_TICKS = 20 * 60;
+    private static final int SKILL_1_COOLDOWN_TICKS = DuWangSkillCatalog.STAND_ASSAULT_COOLDOWN_TICKS;
+    private static final int SKILL_2_COOLDOWN_TICKS = DuWangSkillCatalog.HURRICANE_BARRIER_COOLDOWN_TICKS;
     private DuWangSkillLogic() {
     }
 
