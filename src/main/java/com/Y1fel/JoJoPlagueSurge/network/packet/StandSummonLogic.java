@@ -18,7 +18,7 @@ public class StandSummonLogic {
 
         List<DuWangEntity> owned = level.getEntitiesOfClass(
                 DuWangEntity.class,
-                player.getBoundingBox().inflate(64.0D),
+                player.getBoundingBox().inflate(32.0D),
                 stand -> stand.isOwnedBy(player)
         );
 

@@ -1,10 +1,8 @@
 package com.Y1fel.JoJoPlagueSurge.network.packet;
 
 import com.Y1fel.JoJoPlagueSurge.Config;
-import com.Y1fel.JoJoPlagueSurge.compat.JCraftCompat;
 import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.trackingtornado.TrackingTornadoEntity;
-import com.Y1fel.JoJoPlagueSurge.skill.DuWangSkillCatalog;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
@@ -18,20 +16,19 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
 
 import java.util.List;
 
-
 public class DuWangSkillLogic {
     private static final String SKILL_1_LAST_USE = "jojoplaguesurge.duwang_skill_1_last_use";
     private static final String SKILL_2_LAST_USE = "jojoplaguesurge.duwang_skill_2_last_use";
-    private static final int SKILL_1_COOLDOWN_TICKS = 20 * 5;
-    private static final int SKILL_2_COOLDOWN_TICKS = 20 * 60;
 
+    private static final int SKILL_1_COOLDOWN_TICKS = 20 * 10;
+    private static final int SKILL_2_COOLDOWN_TICKS = 20 * 60;
     private DuWangSkillLogic() {
     }
 
@@ -40,44 +37,36 @@ public class DuWangSkillLogic {
             return;
         }
 
-        // 优先尝试调用 JCraft 的技能实现（如果模组与 API 可用）。
-        if (JCraftCompat.tryUseDuWangSkill(player, skillId)) {
-            return;
-        }
-
-        if (skillId == DuWangSkillCatalog.STAND_ASSAULT_ID) {
+        if (skillId == 1) {
             useTrackingHurricane(player);
-        } else if (skillId == DuWangSkillCatalog.HURRICANE_BARRIER_ID) {
+        } else if (skillId == 2) {
             useHurricaneBarrier(player);
         }
     }
 
-    private static void commandStandAttack(ServerPlayer player) {
+    private static void useTrackingHurricane(ServerPlayer player) {
         long now = player.level().getGameTime();
         long last = player.getPersistentData().getLong(SKILL_1_LAST_USE);
         long elapsed = now - last;
-        Config.duWangSkill1AllowAnyLivingTargetForTest = true;
+        Config.duWangSkill1AllowAnyLivingTargetForTest=true;
 
-        if (elapsed < DuWangSkillCatalog.STAND_ASSAULT_COOLDOWN_TICKS) {
-            long remainSeconds = (DuWangSkillCatalog.STAND_ASSAULT_COOLDOWN_TICKS - elapsed + 19) / 20;
-            player.displayClientMessage(Component.literal(DuWangSkillCatalog.displayNameZh(DuWangSkillCatalog.STAND_ASSAULT_ID)
-                    + "冷却中，还需 " + remainSeconds + " 秒"), true);
+        if (elapsed < SKILL_1_COOLDOWN_TICKS) {
+            long remainSeconds = (SKILL_1_COOLDOWN_TICKS - elapsed + 19) / 20;
+            player.displayClientMessage(Component.literal("追踪飓风冷却中，还需 " + remainSeconds + " 秒"), true);
             return;
         }
 
         String selector = "@e[tag=duwang_target,limit=1,sort=nearest]";
         LivingEntity target = findLookTarget(player, selector);
         if (target == null) {
-            player.displayClientMessage(Component.literal("No target found!"), true);
+            player.displayClientMessage(Component.literal("Invalid target"), false);
             return;
         }
 
         player.getPersistentData().putLong(SKILL_1_LAST_USE, now);
-        broadcastToOpTeam(player, DuWangSkillCatalog.displayNameZh(DuWangSkillCatalog.STAND_ASSAULT_ID));
+        broadcastToOpTeam(player, "追踪飓风");
 
-        player.displayClientMessage(Component.literal("替身已锁定目标: " + target.getName().getString()), true);
-        broadcastToOpTeam(player, DuWangSkillCatalog.displayNameZh(DuWangSkillCatalog.STAND_ASSAULT_ID));
-    }
+        ServerLevel level = player.serverLevel();
 
         TrackingTornadoEntity tornado = ModEntities.TRACKING_TORNADO.get().create(level);
         if (tornado == null) {
@@ -91,6 +80,9 @@ public class DuWangSkillLogic {
         Vec3 initialVelocity = player.getLookAngle().scale(0.3D);
         tornado.setDeltaMovement(initialVelocity);
         level.addFreshEntity(tornado);
+        //level.sendParticles(net.minecraft.core.particles.ParticleTypes.CLOUD,
+        //        target.getX(), target.getY() + 1.0D, target.getZ(),
+        //        80, 1.8D, 1.2D, 1.8D, 0.02D);
     }
 
     private static void useHurricaneBarrier(ServerPlayer player) {
@@ -98,10 +90,9 @@ public class DuWangSkillLogic {
         long last = player.getPersistentData().getLong(SKILL_2_LAST_USE);
         long elapsed = now - last;
 
-        if (elapsed < DuWangSkillCatalog.HURRICANE_BARRIER_COOLDOWN_TICKS) {
-            long remainSeconds = (DuWangSkillCatalog.HURRICANE_BARRIER_COOLDOWN_TICKS - elapsed + 19) / 20;
-            player.displayClientMessage(Component.literal(DuWangSkillCatalog.displayNameZh(DuWangSkillCatalog.HURRICANE_BARRIER_ID)
-                    + "冷却中，还需 " + remainSeconds + " 秒"), true);
+        if (elapsed < SKILL_2_COOLDOWN_TICKS) {
+            long remainSeconds = (SKILL_2_COOLDOWN_TICKS - elapsed + 19) / 20;
+            player.displayClientMessage(Component.literal("飓风屏障冷却中，还需 " + remainSeconds + " 秒"), true);
             return;
         }
 
@@ -117,20 +108,20 @@ public class DuWangSkillLogic {
     }
 
     private static LivingEntity findLookTarget(ServerPlayer player, String selector) {
-        try{
+        try {
             StringReader reader = new StringReader(selector);
-            EntitySelectorParser parser = new EntitySelectorParser(reader,true);
+            EntitySelectorParser parser = new EntitySelectorParser(reader, true);
             EntitySelector entitySelector = parser.parse();
 
             List<? extends Entity> entities = entitySelector.findEntities(player.createCommandSourceStack());
-            for(Entity entity : entities){
-                if(entity instanceof LivingEntity living && living.isAlive() && entity!=player ){
+
+            for (Entity entity : entities) {
+                if (entity instanceof LivingEntity living && living.isAlive() && entity != player) {
                     return living;
                 }
             }
-
-        }catch (CommandSyntaxException e){
-            player.displayClientMessage(Component.literal("Invalid Selector"), true);
+        } catch (CommandSyntaxException e) {
+            player.displayClientMessage(Component.literal("目标选择器无效: " + e.getMessage()), true);
         }
         return null;
     }

@@ -151,14 +151,14 @@ public abstract class StandEntity extends Monster {
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         this.entityData.get(OWNER_UUID).ifPresent(uuid -> tag.putUUID("StandOwner", uuid));
         tag.putInt("MissingOwnerTicks", missingOwnerTicks);
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         if (tag.hasUUID("StandOwner")) {
             this.entityData.set(OWNER_UUID, Optional.of(tag.getUUID("StandOwner")));

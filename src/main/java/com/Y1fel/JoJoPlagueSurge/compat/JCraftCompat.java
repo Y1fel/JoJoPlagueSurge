@@ -4,13 +4,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
-/**
- * JCraft 兼容层：
- * - 按用户要求优先调用 JCraft 内部技能方法；
- * - 使用反射，避免在 JCraft 未安装或 API 变化时直接崩溃；
- * - 如果没有匹配到方法，会返回 false，外层继续使用本模组的本地逻辑。
- */
+//jcraft module
 public final class JCraftCompat {
     private static final String[] POSSIBLE_SKILL_API_CLASSES = {
             "com.jcraft.eyesofender.api.skill.SkillApi",
