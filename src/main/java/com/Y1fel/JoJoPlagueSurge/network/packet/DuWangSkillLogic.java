@@ -1,8 +1,8 @@
 package com.Y1fel.JoJoPlagueSurge.network.packet;
 
 import com.Y1fel.JoJoPlagueSurge.Config;
-import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
-import com.Y1fel.JoJoPlagueSurge.entity.custom.trackingtornado.TrackingTornadoEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.duwang.DuWangEntity;
+import com.Y1fel.JoJoPlagueSurge.skill.DuWangSkillCatalog;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
@@ -17,8 +17,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraftforge.common.util.FakePlayer;
 
 import java.util.List;
@@ -28,8 +29,6 @@ public class DuWangSkillLogic {
     private static final String SKILL_1_LAST_USE = "jojoplaguesurge.duwang_skill_1_last_use";
     private static final String SKILL_2_LAST_USE = "jojoplaguesurge.duwang_skill_2_last_use";
 
-    private static final int SKILL_1_COOLDOWN_TICKS = 20 * 5;
-    private static final int SKILL_2_COOLDOWN_TICKS = 20 * 60;
     private DuWangSkillLogic() {
     }
 
@@ -38,52 +37,76 @@ public class DuWangSkillLogic {
             return;
         }
 
-        if (skillId == 1) {
-            useTrackingHurricane(player);
-        } else if (skillId == 2) {
+        if (skillId == DuWangSkillCatalog.STAND_ASSAULT_ID) {
+            commandStandAttack(player);
+        } else if (skillId == DuWangSkillCatalog.HURRICANE_BARRIER_ID) {
             useHurricaneBarrier(player);
         }
     }
 
-    private static void useTrackingHurricane(ServerPlayer player) {
+    private static void commandStandAttack(ServerPlayer player) {
         long now = player.level().getGameTime();
         long last = player.getPersistentData().getLong(SKILL_1_LAST_USE);
         long elapsed = now - last;
-        Config.duWangSkill1AllowAnyLivingTargetForTest=true;
+        Config.duWangSkill1AllowAnyLivingTargetForTest = true;
 
-        if (elapsed < SKILL_1_COOLDOWN_TICKS) {
-            long remainSeconds = (SKILL_1_COOLDOWN_TICKS - elapsed + 19) / 20;
-            player.displayClientMessage(Component.literal("追踪飓风冷却中，还需 " + remainSeconds + " 秒"), true);
+        if (elapsed < DuWangSkillCatalog.STAND_ASSAULT_COOLDOWN_TICKS) {
+            long remainSeconds = (DuWangSkillCatalog.STAND_ASSAULT_COOLDOWN_TICKS - elapsed + 19) / 20;
+            player.displayClientMessage(Component.literal(DuWangSkillCatalog.displayNameZh(DuWangSkillCatalog.STAND_ASSAULT_ID)
+                    + "冷却中，还需 " + remainSeconds + " 秒"), true);
             return;
         }
 
-        String selector = "@e[tag=duwang_target,limit=1,sort=nearest]";
-        LivingEntity target = findLookTarget(player,selector);
-        if(target==null){
-            player.displayClientMessage(Component.literal("No target found!"), true);
+        DuWangEntity stand = findOwnedStand(player);
+        if (stand == null) {
+            player.displayClientMessage(Component.literal("请先按 G 召唤替身"), true);
+            return;
+        }
+
+        LivingEntity target = findCrosshairTarget(player, 18.0D);
+        if (target == null) {
+            String selector = "@e[tag=duwang_target,limit=1,sort=nearest]";
+            target = findLookTarget(player, selector);
+        }
+        if (target == null) {
+            player.displayClientMessage(Component.literal("没有找到可攻击目标（请用准星对准生物）"), true);
             return;
         }
 
         player.getPersistentData().putLong(SKILL_1_LAST_USE, now);
-        broadcastToOpTeam(player, "追踪飓风");
+        stand.setTarget(target);
+        player.setLastHurtMob(target);
 
-        ServerLevel level = player.serverLevel();
+        player.displayClientMessage(Component.literal("替身已锁定目标: " + target.getName().getString()), true);
+        broadcastToOpTeam(player, DuWangSkillCatalog.displayNameZh(DuWangSkillCatalog.STAND_ASSAULT_ID));
+    }
 
-        TrackingTornadoEntity tornado = ModEntities.TRACKING_TORNADO.get().create(level);
-        if (tornado == null) {
-            return;
-        }
-        Vec3 spawnPos = player.getEyePosition().add(player.getLookAngle().scale(1.0D));
-        tornado.moveTo(spawnPos.x, spawnPos.y - 0.3D, spawnPos.z, player.getYRot(), player.getXRot());
-        tornado.setOwner(player);
-        tornado.setTarget(target);
+    private static DuWangEntity findOwnedStand(ServerPlayer player) {
+        List<DuWangEntity> stands = player.serverLevel().getEntitiesOfClass(
+                DuWangEntity.class,
+                player.getBoundingBox().inflate(64.0D),
+                stand -> stand.isOwnedBy(player) && stand.isAlive()
+        );
+        return stands.isEmpty() ? null : stands.get(0);
+    }
 
-        Vec3 initialVelocity = player.getLookAngle().scale(0.3D);
-        tornado.setDeltaMovement(initialVelocity);
-        level.addFreshEntity(tornado);
-        //level.sendParticles(net.minecraft.core.particles.ParticleTypes.CLOUD,
-        //        target.getX(), target.getY() + 1.0D, target.getZ(),
-        //        80, 1.8D, 1.2D, 1.8D, 0.02D);
+    private static LivingEntity findCrosshairTarget(ServerPlayer player, double maxDistance) {
+        Vec3 eyePos = player.getEyePosition();
+        Vec3 look = player.getLookAngle();
+        Vec3 reachPos = eyePos.add(look.scale(maxDistance));
+        AABB searchBox = player.getBoundingBox().expandTowards(look.scale(maxDistance)).inflate(1.0D);
+
+        EntityHitResult hitResult = ProjectileUtil.getEntityHitResult(
+                player,
+                eyePos,
+                reachPos,
+                searchBox,
+                candidate -> candidate instanceof LivingEntity living && living.isAlive() && candidate != player,
+                maxDistance * maxDistance
+        );
+        Entity hit = hitResult != null ? hitResult.getEntity() : null;
+
+        return hit instanceof LivingEntity living ? living : null;
     }
 
     private static void useHurricaneBarrier(ServerPlayer player) {
@@ -91,9 +114,10 @@ public class DuWangSkillLogic {
         long last = player.getPersistentData().getLong(SKILL_2_LAST_USE);
         long elapsed = now - last;
 
-        if (elapsed < SKILL_2_COOLDOWN_TICKS) {
-            long remainSeconds = (SKILL_2_COOLDOWN_TICKS - elapsed + 19) / 20;
-            player.displayClientMessage(Component.literal("飓风屏障冷却中，还需 " + remainSeconds + " 秒"), true);
+        if (elapsed < DuWangSkillCatalog.HURRICANE_BARRIER_COOLDOWN_TICKS) {
+            long remainSeconds = (DuWangSkillCatalog.HURRICANE_BARRIER_COOLDOWN_TICKS - elapsed + 19) / 20;
+            player.displayClientMessage(Component.literal(DuWangSkillCatalog.displayNameZh(DuWangSkillCatalog.HURRICANE_BARRIER_ID)
+                    + "冷却中，还需 " + remainSeconds + " 秒"), true);
             return;
         }
 
