@@ -17,7 +17,7 @@ public final class DuWangSkillCatalog {
 
     public static String displayNameZh(int skillId) {
         return switch (skillId) {
-            case STAND_ASSAULT_ID -> "替身突击";
+            case STAND_ASSAULT_ID -> "追踪飓风";
             case HURRICANE_BARRIER_ID -> "飓风屏障";
             default -> "未知技能";
         };

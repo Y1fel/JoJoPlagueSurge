@@ -1,7 +1,9 @@
 package com.Y1fel.JoJoPlagueSurge.network.packet;
 
 import com.Y1fel.JoJoPlagueSurge.Config;
-import com.Y1fel.JoJoPlagueSurge.entity.custom.duwang.DuWangEntity;
+import com.Y1fel.JoJoPlagueSurge.compat.JCraftCompat;
+import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.trackingtornado.TrackingTornadoEntity;
 import com.Y1fel.JoJoPlagueSurge.skill.DuWangSkillCatalog;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -16,7 +18,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -37,8 +38,13 @@ public class DuWangSkillLogic {
             return;
         }
 
+        // 优先尝试调用 JCraft 的技能实现（如果模组与 API 可用）。
+        if (JCraftCompat.tryUseDuWangSkill(player, skillId)) {
+            return;
+        }
+
         if (skillId == DuWangSkillCatalog.STAND_ASSAULT_ID) {
-            commandStandAttack(player);
+            useTrackingHurricane(player);
         } else if (skillId == DuWangSkillCatalog.HURRICANE_BARRIER_ID) {
             useHurricaneBarrier(player);
         }
@@ -57,56 +63,32 @@ public class DuWangSkillLogic {
             return;
         }
 
-        DuWangEntity stand = findOwnedStand(player);
-        if (stand == null) {
-            player.displayClientMessage(Component.literal("请先按 G 召唤替身"), true);
-            return;
-        }
-
-        LivingEntity target = findCrosshairTarget(player, 18.0D);
+        String selector = "@e[tag=duwang_target,limit=1,sort=nearest]";
+        LivingEntity target = findLookTarget(player, selector);
         if (target == null) {
-            String selector = "@e[tag=duwang_target,limit=1,sort=nearest]";
-            target = findLookTarget(player, selector);
-        }
-        if (target == null) {
-            player.displayClientMessage(Component.literal("没有找到可攻击目标（请用准星对准生物）"), true);
+            player.displayClientMessage(Component.literal("No target found!"), true);
             return;
         }
 
         player.getPersistentData().putLong(SKILL_1_LAST_USE, now);
-        stand.setTarget(target);
-        player.setLastHurtMob(target);
+        broadcastToOpTeam(player, DuWangSkillCatalog.displayNameZh(DuWangSkillCatalog.STAND_ASSAULT_ID));
 
         player.displayClientMessage(Component.literal("替身已锁定目标: " + target.getName().getString()), true);
         broadcastToOpTeam(player, DuWangSkillCatalog.displayNameZh(DuWangSkillCatalog.STAND_ASSAULT_ID));
     }
 
-    private static DuWangEntity findOwnedStand(ServerPlayer player) {
-        List<DuWangEntity> stands = player.serverLevel().getEntitiesOfClass(
-                DuWangEntity.class,
-                player.getBoundingBox().inflate(64.0D),
-                stand -> stand.isOwnedBy(player) && stand.isAlive()
-        );
-        return stands.isEmpty() ? null : stands.get(0);
-    }
+        TrackingTornadoEntity tornado = ModEntities.TRACKING_TORNADO.get().create(level);
+        if (tornado == null) {
+            return;
+        }
+        Vec3 spawnPos = player.getEyePosition().add(player.getLookAngle().scale(1.0D));
+        tornado.moveTo(spawnPos.x, spawnPos.y - 0.3D, spawnPos.z, player.getYRot(), player.getXRot());
+        tornado.setOwner(player);
+        tornado.setTarget(target);
 
-    private static LivingEntity findCrosshairTarget(ServerPlayer player, double maxDistance) {
-        Vec3 eyePos = player.getEyePosition();
-        Vec3 look = player.getLookAngle();
-        Vec3 reachPos = eyePos.add(look.scale(maxDistance));
-        AABB searchBox = player.getBoundingBox().expandTowards(look.scale(maxDistance)).inflate(1.0D);
-
-        EntityHitResult hitResult = ProjectileUtil.getEntityHitResult(
-                player,
-                eyePos,
-                reachPos,
-                searchBox,
-                candidate -> candidate instanceof LivingEntity living && living.isAlive() && candidate != player,
-                maxDistance * maxDistance
-        );
-        Entity hit = hitResult != null ? hitResult.getEntity() : null;
-
-        return hit instanceof LivingEntity living ? living : null;
+        Vec3 initialVelocity = player.getLookAngle().scale(0.3D);
+        tornado.setDeltaMovement(initialVelocity);
+        level.addFreshEntity(tornado);
     }
 
     private static void useHurricaneBarrier(ServerPlayer player) {

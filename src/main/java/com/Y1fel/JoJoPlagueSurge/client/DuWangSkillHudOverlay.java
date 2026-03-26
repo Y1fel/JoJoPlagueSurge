@@ -28,6 +28,11 @@ public class DuWangSkillHudOverlay {
 
     @SubscribeEvent
     public static void renderSkills(RenderGuiOverlayEvent.Post event) {
+        // 优先直接走 JCraft 的 HUD 逻辑，成功则不再绘制本地兜底技能栏。
+        if (JCraftClientCompat.tryRenderSkillHud(event)) {
+            return;
+        }
+
         Minecraft mc = Minecraft.getInstance();
         if (mc.options.hideGui || mc.player == null || mc.level == null) {
             return;
