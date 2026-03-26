@@ -1,8 +1,10 @@
 package com.Y1fel.JoJoPlagueSurge.network.packet;
 
 import com.Y1fel.JoJoPlagueSurge.Config;
+import com.Y1fel.JoJoPlagueSurge.compat.JCraftCompat;
 import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.trackingtornado.TrackingTornadoEntity;
+import com.Y1fel.JoJoPlagueSurge.skill.DuWangSkillCatalog;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
@@ -17,6 +19,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraftforge.common.util.FakePlayer;
 
 import java.util.List;
@@ -36,22 +40,28 @@ public class DuWangSkillLogic {
             return;
         }
 
-        if (skillId == 1) {
+        // 优先尝试调用 JCraft 的技能实现（如果模组与 API 可用）。
+        if (JCraftCompat.tryUseDuWangSkill(player, skillId)) {
+            return;
+        }
+
+        if (skillId == DuWangSkillCatalog.STAND_ASSAULT_ID) {
             useTrackingHurricane(player);
-        } else if (skillId == 2) {
+        } else if (skillId == DuWangSkillCatalog.HURRICANE_BARRIER_ID) {
             useHurricaneBarrier(player);
         }
     }
 
-    private static void useTrackingHurricane(ServerPlayer player) {
+    private static void commandStandAttack(ServerPlayer player) {
         long now = player.level().getGameTime();
         long last = player.getPersistentData().getLong(SKILL_1_LAST_USE);
         long elapsed = now - last;
         Config.duWangSkill1AllowAnyLivingTargetForTest = true;
 
-        if (elapsed < SKILL_1_COOLDOWN_TICKS) {
-            long remainSeconds = (SKILL_1_COOLDOWN_TICKS - elapsed + 19) / 20;
-            player.displayClientMessage(Component.literal("追踪飓风冷却中，还需 " + remainSeconds + " 秒"), true);
+        if (elapsed < DuWangSkillCatalog.STAND_ASSAULT_COOLDOWN_TICKS) {
+            long remainSeconds = (DuWangSkillCatalog.STAND_ASSAULT_COOLDOWN_TICKS - elapsed + 19) / 20;
+            player.displayClientMessage(Component.literal(DuWangSkillCatalog.displayNameZh(DuWangSkillCatalog.STAND_ASSAULT_ID)
+                    + "冷却中，还需 " + remainSeconds + " 秒"), true);
             return;
         }
 
@@ -63,9 +73,11 @@ public class DuWangSkillLogic {
         }
 
         player.getPersistentData().putLong(SKILL_1_LAST_USE, now);
-        broadcastToOpTeam(player, "追踪飓风");
+        broadcastToOpTeam(player, DuWangSkillCatalog.displayNameZh(DuWangSkillCatalog.STAND_ASSAULT_ID));
 
-        ServerLevel level = player.serverLevel();
+        player.displayClientMessage(Component.literal("替身已锁定目标: " + target.getName().getString()), true);
+        broadcastToOpTeam(player, DuWangSkillCatalog.displayNameZh(DuWangSkillCatalog.STAND_ASSAULT_ID));
+    }
 
         TrackingTornadoEntity tornado = ModEntities.TRACKING_TORNADO.get().create(level);
         if (tornado == null) {
@@ -86,9 +98,10 @@ public class DuWangSkillLogic {
         long last = player.getPersistentData().getLong(SKILL_2_LAST_USE);
         long elapsed = now - last;
 
-        if (elapsed < SKILL_2_COOLDOWN_TICKS) {
-            long remainSeconds = (SKILL_2_COOLDOWN_TICKS - elapsed + 19) / 20;
-            player.displayClientMessage(Component.literal("飓风屏障冷却中，还需 " + remainSeconds + " 秒"), true);
+        if (elapsed < DuWangSkillCatalog.HURRICANE_BARRIER_COOLDOWN_TICKS) {
+            long remainSeconds = (DuWangSkillCatalog.HURRICANE_BARRIER_COOLDOWN_TICKS - elapsed + 19) / 20;
+            player.displayClientMessage(Component.literal(DuWangSkillCatalog.displayNameZh(DuWangSkillCatalog.HURRICANE_BARRIER_ID)
+                    + "冷却中，还需 " + remainSeconds + " 秒"), true);
             return;
         }
 
