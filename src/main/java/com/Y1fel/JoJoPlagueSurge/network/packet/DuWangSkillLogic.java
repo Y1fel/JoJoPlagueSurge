@@ -16,8 +16,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
 
@@ -27,9 +25,9 @@ import java.util.List;
 public class DuWangSkillLogic {
     private static final String SKILL_1_LAST_USE = "jojoplaguesurge.duwang_skill_1_last_use";
     private static final String SKILL_2_LAST_USE = "jojoplaguesurge.duwang_skill_2_last_use";
-
     private static final int SKILL_1_COOLDOWN_TICKS = 20 * 5;
     private static final int SKILL_2_COOLDOWN_TICKS = 20 * 60;
+
     private DuWangSkillLogic() {
     }
 
@@ -49,7 +47,7 @@ public class DuWangSkillLogic {
         long now = player.level().getGameTime();
         long last = player.getPersistentData().getLong(SKILL_1_LAST_USE);
         long elapsed = now - last;
-        Config.duWangSkill1AllowAnyLivingTargetForTest=true;
+        Config.duWangSkill1AllowAnyLivingTargetForTest = true;
 
         if (elapsed < SKILL_1_COOLDOWN_TICKS) {
             long remainSeconds = (SKILL_1_COOLDOWN_TICKS - elapsed + 19) / 20;
@@ -58,8 +56,8 @@ public class DuWangSkillLogic {
         }
 
         String selector = "@e[tag=duwang_target,limit=1,sort=nearest]";
-        LivingEntity target = findLookTarget(player,selector);
-        if(target==null){
+        LivingEntity target = findLookTarget(player, selector);
+        if (target == null) {
             player.displayClientMessage(Component.literal("No target found!"), true);
             return;
         }
@@ -81,9 +79,6 @@ public class DuWangSkillLogic {
         Vec3 initialVelocity = player.getLookAngle().scale(0.3D);
         tornado.setDeltaMovement(initialVelocity);
         level.addFreshEntity(tornado);
-        //level.sendParticles(net.minecraft.core.particles.ParticleTypes.CLOUD,
-        //        target.getX(), target.getY() + 1.0D, target.getZ(),
-        //        80, 1.8D, 1.2D, 1.8D, 0.02D);
     }
 
     private static void useHurricaneBarrier(ServerPlayer player) {

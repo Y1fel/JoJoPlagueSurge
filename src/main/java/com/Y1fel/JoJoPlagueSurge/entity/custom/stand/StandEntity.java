@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -29,6 +30,7 @@ public abstract class StandEntity extends Monster {
             SynchedEntityData.defineId(StandEntity.class, EntityDataSerializers.OPTIONAL_UUID);
 
     private int missingOwnerTicks;
+    private int attackCooldownTicks;
 
     protected StandEntity(EntityType<? extends Monster> entityType, Level level) {
         super(entityType, level);
@@ -90,11 +92,36 @@ public abstract class StandEntity extends Monster {
         missingOwnerTicks = 0;
         followOwner(owner);
         syncTargetFromOwner(owner);
+        tickCombat(owner);
     }
 
     protected void syncTargetFromOwner(Player owner) {
         if (owner.getLastHurtMob() != null && owner.getLastHurtMob().isAlive() && owner.getLastHurtMob() != owner) {
             this.setTarget(owner.getLastHurtMob());
+        }
+    }
+
+    protected void tickCombat(Player owner) {
+        if (attackCooldownTicks > 0) {
+            attackCooldownTicks--;
+        }
+
+        LivingEntity target = this.getTarget();
+        if (target == null || !target.isAlive() || target == owner) {
+            return;
+        }
+
+        Vec3 toTarget = target.position().add(0.0D, target.getBbHeight() * 0.5D, 0.0D).subtract(this.position());
+        double distanceToTarget = toTarget.length();
+
+        if (distanceToTarget > 0.001D) {
+            Vec3 chase = toTarget.normalize().scale(0.35D);
+            this.setDeltaMovement(this.getDeltaMovement().scale(0.55D).add(chase));
+        }
+
+        if (distanceToTarget <= 2.2D && attackCooldownTicks <= 0) {
+            this.doHurtTarget(target);
+            attackCooldownTicks = 10;
         }
     }
 
