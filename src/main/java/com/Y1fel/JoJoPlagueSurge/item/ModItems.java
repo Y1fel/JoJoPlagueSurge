@@ -16,6 +16,9 @@ public class ModItems {
 
     public static final RegistryObject<Item> BLOODY_TOOTH =
             ITEMS.register("bloody_tooth",() -> new Item(new Item.Properties().stacksTo(1)));
+
+    public static final RegistryObject<Item> STAND_DISC =
+            ITEMS.register("stand_disc",() -> new StandDiscItem(new Item.Properties().stacksTo(1)));
     public static final RegistryObject<ForgeSpawnEggItem> BLUEHAWAII_SPAWN_EGG =
             ITEMS.register("bluehawaii_spawn_egg", () -> new ForgeSpawnEggItem(
                     ModEntities.BLUEHAWAII,

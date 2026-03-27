@@ -39,7 +39,6 @@ public class ModClientEvents {
     public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
         event.register(ModKeyMappings.DUWANG_SKILL_1);
         event.register(ModKeyMappings.DUWANG_SKILL_2);
-        event.register(ModKeyMappings.TOGGLE_STAND);
     }
 
 }

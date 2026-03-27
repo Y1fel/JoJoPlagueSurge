@@ -25,13 +25,6 @@ public class ModKeyMappings {
             CATEGORY
     );
 
-    public static final KeyMapping TOGGLE_STAND = new KeyMapping(
-            "key." + ModEntrance.MODID + ".toggle_stand",
-            KeyConflictContext.IN_GAME,
-            InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_G,
-            CATEGORY
-    );
 
     private ModKeyMappings() {
     }
