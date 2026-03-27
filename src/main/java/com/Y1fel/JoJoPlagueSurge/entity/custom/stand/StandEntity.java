@@ -29,8 +29,8 @@ public abstract class StandEntity extends Monster {
     private static final EntityDataAccessor<Optional<UUID>> OWNER_UUID =
             SynchedEntityData.defineId(StandEntity.class, EntityDataSerializers.OPTIONAL_UUID);
 
-    private static final double FOLLOW_BACK_DISTANCE = 1.35D;
-    private static final double FOLLOW_SIDE_OFFSET = 0.35D;
+    private static final double FOLLOW_DISTANCE = 1.0D;
+    private static final float FOLLOW_ROTATION_OFFSET_DEGREES = -90.0F;
     private static final double FOLLOW_HEIGHT_OFFSET = 1.05D;
 
     private int missingOwnerTicks;
@@ -132,46 +132,29 @@ public abstract class StandEntity extends Monster {
     }
 
     protected void followOwner(Player owner) {
-        Vec3 desiredPos = calculateBackStandPos(owner);
-
-        double distance = this.position().distanceTo(desiredPos);
-        if (distance > 12.0D) {
-            this.teleportTo(desiredPos.x, desiredPos.y, desiredPos.z);
-            this.setDeltaMovement(Vec3.ZERO);
-            return;
+        // 对齐 JCraft：替身作为 rider 时，位置由“玩家朝向 + rotationOffset + distanceOffset”决定。
+        if (this.getVehicle() != owner) {
+            this.startRiding(owner, true);
         }
 
-        // JCraft 风格：替身不是跑路径追随，而是稳定“附着”在玩家后方点位。
-        double lerp = distance > 2.0D ? 0.5D : 0.35D;
-        double x = Mth.lerp(lerp, this.getX(), desiredPos.x);
-        double y = Mth.lerp(lerp, this.getY(), desiredPos.y);
-        double z = Mth.lerp(lerp, this.getZ(), desiredPos.z);
-        this.setPos(x, y, z);
+        Vec3 desiredPos = calculateBackStandPos(owner);
+        this.setPos(desiredPos.x, desiredPos.y, desiredPos.z);
         this.setDeltaMovement(Vec3.ZERO);
 
-        float ownerBodyRot = owner.yBodyRot;
-        this.setYRot(Mth.rotLerp(0.4F, this.getYRot(), ownerBodyRot));
-        this.setYHeadRot(this.getYRot());
-        this.yBodyRot = this.getYRot();
+        this.setYRot(owner.getYRot());
+        this.setXRot(owner.getXRot());
+        this.setYHeadRot(owner.getYHeadRot());
+        this.yBodyRot = owner.yBodyRot;
     }
 
     public Vec3 calculateBackStandPos(Player owner) {
-        Vec3 flatLook = owner.getLookAngle();
-        flatLook = new Vec3(flatLook.x, 0.0D, flatLook.z);
-        if (flatLook.lengthSqr() < 1.0E-4D) {
-            flatLook = Vec3.directionFromRotation(0.0F, owner.getYRot());
-            flatLook = new Vec3(flatLook.x, 0.0D, flatLook.z);
-        }
-        flatLook = flatLook.normalize();
+        float yawRadians = (float) Math.toRadians(owner.getYRot() + FOLLOW_ROTATION_OFFSET_DEGREES);
+        double xOffset = Mth.cos(yawRadians) * FOLLOW_DISTANCE;
+        double zOffset = Mth.sin(yawRadians) * FOLLOW_DISTANCE;
 
-        float sideSign = this.getUUID().hashCode() % 2 == 0 ? 1.0F : -1.0F;
-        Vec3 side = flatLook.yRot((float) (Math.PI / 2D)).normalize().scale(FOLLOW_SIDE_OFFSET * sideSign);
-        Vec3 back = flatLook.scale(-FOLLOW_BACK_DISTANCE);
-
-        return owner.position()
-                .add(0.0D, FOLLOW_HEIGHT_OFFSET, 0.0D)
-                .add(back)
-                .add(side);
+        // JCraft 对应项：passenger.getMyRidingOffset() + heightOffset
+        double yOffset = this.getMyRidingOffset() + FOLLOW_HEIGHT_OFFSET;
+        return owner.position().add(xOffset, yOffset, zOffset);
     }
 
     @Override
