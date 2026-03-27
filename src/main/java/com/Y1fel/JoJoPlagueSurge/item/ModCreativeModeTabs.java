@@ -23,6 +23,7 @@ public class ModCreativeModeTabs {
                         pOutput.accept(ModItems.DUVILLAGER_SPAWN_EGG.get());
                         pOutput.accept(ModItems.DUWANG_SPAWN_EGG.get());
                         pOutput.accept(ModItems.BLOODY_TOOTH.get());
+                        pOutput.accept(ModItems.STAND_DISC.get());
                     }).build());
     public static void register(IEventBus eventBus) {
         CREATIVE_MODE_TABS.register(eventBus);
