@@ -28,6 +28,11 @@ import net.minecraftforge.fml.common.Mod;
 public final class JCraftDuWangSkillOverlay {
     private static final int SLOT_SIZE = 22;
     private static final int SPACING = 8;
+    private static final ResourceLocation EMPTY_GAUGE = ResourceLocation.tryParse("jcraft:textures/gui/empty_gauge.png");
+    private static final ResourceLocation FULL_GAUGE = ResourceLocation.tryParse("jcraft:textures/gui/full_gauge.png");
+    private static final int GAUGE_WIDTH = 42;
+    private static final int GAUGE_HEIGHT = 5;
+    private static final int GAUGE_Y_OFFSET = -65;
 
     private static int timeSinceNoCooldowns = 100;
 
@@ -46,9 +51,11 @@ public final class JCraftDuWangSkillOverlay {
         }
 
         LocalPlayer player = mc.player;
-        if (!hasOwnedStand(player)) {
+        DuWangEntity stand = getOwnedStand(player);
+        if (stand == null) {
             return;
         }
+        renderStandGauge(event.getGuiGraphics(), event.getWindow().getGuiScaledWidth(), event.getWindow().getGuiScaledHeight(), stand);
 
         timeSinceNoCooldowns++;
 
@@ -112,8 +119,8 @@ public final class JCraftDuWangSkillOverlay {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    private static boolean hasOwnedStand(LocalPlayer player) {
-        return !StandSummonLogic.findOwnedStands(player, DuWangEntity.class).isEmpty();
+    private static DuWangEntity getOwnedStand(LocalPlayer player) {
+        return StandSummonLogic.findNearestOwnedStand(player, DuWangEntity.class);
     }
 
     private static double getCooldownRemainRatio(CooldownType cooldownType) {
@@ -124,5 +131,21 @@ public final class JCraftDuWangSkillOverlay {
             return 0.0D;
         }
         return Mth.clamp(remain / (double) initial, 0.0D, 1.0D);
+    }
+
+    private static void renderStandGauge(GuiGraphics gui, int screenWidth, int screenHeight, DuWangEntity stand) {
+        if (EMPTY_GAUGE == null || FULL_GAUGE == null) {
+            return;
+        }
+
+        int x = screenWidth / 2 - GAUGE_WIDTH / 2;
+        int y = screenHeight + GAUGE_Y_OFFSET;
+        float healthRatio = Mth.clamp(stand.getHealth() / stand.getMaxHealth(), 0.0F, 1.0F);
+        int fullWidth = Mth.floor(healthRatio * GAUGE_WIDTH);
+
+        RenderSystem.setShaderColor(0.5F, 0.5F, 1.0F, 1.0F);
+        gui.blit(EMPTY_GAUGE, x, y, 0, 0, GAUGE_WIDTH, GAUGE_HEIGHT, GAUGE_WIDTH, GAUGE_HEIGHT);
+        gui.blit(FULL_GAUGE, x, y, 0, 0, fullWidth, GAUGE_HEIGHT, GAUGE_WIDTH, GAUGE_HEIGHT);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 }
