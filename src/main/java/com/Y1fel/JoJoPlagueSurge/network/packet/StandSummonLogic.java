@@ -13,6 +13,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.StreamSupport;
 
 public class StandSummonLogic {
     private StandSummonLogic() {
@@ -59,8 +60,8 @@ public class StandSummonLogic {
     public static <T extends StandEntity> List<T> findOwnedStands(Player player, Class<T> standClass) {
         Level level = player.level();
         if (level instanceof ServerLevel serverLevel) {
-            return serverLevel.getAllEntities().stream()
-                    .filter(entity -> standClass.isInstance(entity))
+            return StreamSupport.stream(serverLevel.getAllEntities().spliterator(),false)
+                    .filter(standClass::isInstance)
                     .map(standClass::cast)
                     .filter(stand -> stand.isAlive() && stand.isOwnedBy(player))
                     .toList();
