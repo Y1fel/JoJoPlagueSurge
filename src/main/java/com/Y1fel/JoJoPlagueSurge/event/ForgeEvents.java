@@ -3,7 +3,6 @@ package com.Y1fel.JoJoPlagueSurge.event;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 //import net.minecraftforge.event.world.BiomeLoadingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class ForgeEvents {
 
@@ -15,4 +14,5 @@ public class ForgeEvents {
     //            new MobSpawnSettings.SpawnerData(ModEntities.EXAMPLE_MOB.get(), 80, 1, 3)
     //    );
     //}
+
 }

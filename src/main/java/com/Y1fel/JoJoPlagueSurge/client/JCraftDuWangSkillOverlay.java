@@ -7,6 +7,7 @@ import com.Y1fel.JoJoPlagueSurge.skill.DuWangSkillCatalog;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.arna.jcraft.client.JClientConfig;
 import net.arna.jcraft.client.gui.hud.JCraftAbilityHud;
+import net.arna.jcraft.common.util.ColorUtils;
 import net.arna.jcraft.common.util.CooldownType;
 import net.arna.jcraft.platform.JComponentPlatformUtils;
 import net.minecraft.client.Minecraft;
@@ -26,8 +27,12 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = ModEntrance.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class JCraftDuWangSkillOverlay {
     private static final int SLOT_SIZE = 22;
-    private static final int SLOT_GAP = 6;
-    private static final int TOP = 18;
+    private static final int SPACING = 8;
+    private static final ResourceLocation EMPTY_GAUGE = ResourceLocation.tryParse("jcraft:textures/gui/empty_gauge.png");
+    private static final ResourceLocation FULL_GAUGE = ResourceLocation.tryParse("jcraft:textures/gui/full_gauge.png");
+    private static final int GAUGE_WIDTH = 42;
+    private static final int GAUGE_HEIGHT = 5;
+    private static final int GAUGE_Y_OFFSET = -65;
 
     private static int timeSinceNoCooldowns = 100;
 
@@ -46,9 +51,11 @@ public final class JCraftDuWangSkillOverlay {
         }
 
         LocalPlayer player = mc.player;
-        if (!hasOwnedStand(player)) {
+        DuWangEntity stand = getOwnedStand(player);
+        if (stand == null) {
             return;
         }
+        renderStandGauge(event.getGuiGraphics(), event.getWindow().getGuiScaledWidth(), event.getWindow().getGuiScaledHeight(), stand);
 
         timeSinceNoCooldowns++;
 
@@ -69,8 +76,8 @@ public final class JCraftDuWangSkillOverlay {
 
         GuiGraphics gui = event.getGuiGraphics();
         int baseX = JCraftAbilityHud.getHudX(event.getWindow().getGuiScaledWidth(), 32);
-        int y1 = TOP;
-        int y2 = TOP + SLOT_SIZE + SLOT_GAP;
+        int y1 = SPACING * 14;
+        int y2 = SPACING * 17;
 
         renderSkill(gui, baseX, y1, DuWangSkillCatalog.TRACKING_TORNADO_ID,
                 CooldownType.STAND_SP1, cd1Ratio, "special1", alpha);
@@ -99,23 +106,21 @@ public final class JCraftDuWangSkillOverlay {
         int remainTicks = JComponentPlatformUtils.getCooldowns(Minecraft.getInstance().player).getCooldown(cooldownType);
         if (remainTicks > 0 && remainRatio > 0.0D) {
             JCraftAbilityHud.renderCooldown(gui, remainRatio, x, y);
-            String remainText = Integer.toString(Mth.ceil(remainTicks / 20.0F));
-            int textX = x + (SLOT_SIZE - Minecraft.getInstance().font.width(remainText)) / 2;
-            gui.drawString(Minecraft.getInstance().font, remainText, textX, y + 7, withAlpha(0xFFE7E7E7, alpha), true);
         }
 
         String keyText = JCraftAbilityHud.cooldownTypeToKeybind(cooldownType, true);
-        gui.drawString(Minecraft.getInstance().font, keyText, x + SLOT_SIZE + 4, y + 7, withAlpha(0xFFDEE6EF, alpha), false);
+        gui.drawString(
+                Minecraft.getInstance().font,
+                keyText,
+                x,
+                y,
+                ColorUtils.HSBAtoRGBA(0.3f - (float) remainRatio * 10f / 720f, remainRatio < 1.6 ? 0.0f : 1.0f, 1.0f, alpha * 2.0f)
+        );
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    private static int withAlpha(int argb, float alpha) {
-        int a = Mth.clamp((int) (alpha * 255.0F), 0, 255);
-        return (a << 24) | (argb & 0x00FFFFFF);
-    }
-
-    private static boolean hasOwnedStand(LocalPlayer player) {
-        return !StandSummonLogic.findOwnedStands(player, DuWangEntity.class).isEmpty();
+    private static DuWangEntity getOwnedStand(LocalPlayer player) {
+        return StandSummonLogic.findNearestOwnedStand(player, DuWangEntity.class);
     }
 
     private static double getCooldownRemainRatio(CooldownType cooldownType) {
@@ -126,5 +131,21 @@ public final class JCraftDuWangSkillOverlay {
             return 0.0D;
         }
         return Mth.clamp(remain / (double) initial, 0.0D, 1.0D);
+    }
+
+    private static void renderStandGauge(GuiGraphics gui, int screenWidth, int screenHeight, DuWangEntity stand) {
+        if (EMPTY_GAUGE == null || FULL_GAUGE == null) {
+            return;
+        }
+
+        int x = screenWidth / 2 - GAUGE_WIDTH / 2;
+        int y = screenHeight + GAUGE_Y_OFFSET;
+        float healthRatio = Mth.clamp(stand.getHealth() / stand.getMaxHealth(), 0.0F, 1.0F);
+        int fullWidth = Mth.floor(healthRatio * GAUGE_WIDTH);
+
+        RenderSystem.setShaderColor(0.5F, 0.5F, 1.0F, 1.0F);
+        gui.blit(EMPTY_GAUGE, x, y, 0, 0, GAUGE_WIDTH, GAUGE_HEIGHT, GAUGE_WIDTH, GAUGE_HEIGHT);
+        gui.blit(FULL_GAUGE, x, y, 0, 0, fullWidth, GAUGE_HEIGHT, GAUGE_WIDTH, GAUGE_HEIGHT);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 }
