@@ -29,12 +29,17 @@ public abstract class StandEntity extends Monster {
     private static final EntityDataAccessor<Optional<UUID>> OWNER_UUID =
             SynchedEntityData.defineId(StandEntity.class, EntityDataSerializers.OPTIONAL_UUID);
 
+    private static final double FOLLOW_BACK_DISTANCE = 1.35D;
+    private static final double FOLLOW_SIDE_OFFSET = 0.35D;
+    private static final double FOLLOW_HEIGHT_OFFSET = 1.05D;
+
     private int missingOwnerTicks;
     private int attackCooldownTicks;
 
     protected StandEntity(EntityType<? extends Monster> entityType, Level level) {
         super(entityType, level);
-        this.noPhysics = false;
+        this.noPhysics = true;
+        this.setNoAi(true);
     }
 
     public static AttributeSupplier.Builder createStandAttributes() {
@@ -75,6 +80,7 @@ public abstract class StandEntity extends Monster {
     public void tick() {
         super.tick();
         this.setNoGravity(true);
+        this.noPhysics = true;
 
         if (this.level().isClientSide) {
             return;
@@ -126,20 +132,46 @@ public abstract class StandEntity extends Monster {
     }
 
     protected void followOwner(Player owner) {
-        float side = this.getUUID().hashCode() % 2 == 0 ? 1.0F : -1.0F;
-        Vec3 sideOffset = owner.getLookAngle().yRot((float) (Math.PI / 2D)).normalize().scale(1.15D * side);
-        Vec3 desiredPos = owner.position().add(sideOffset).add(0.0D, 1.1D, 0.0D);
+        Vec3 desiredPos = calculateBackStandPos(owner);
 
         double distance = this.position().distanceTo(desiredPos);
-        if (distance > 16.0D) {
+        if (distance > 12.0D) {
             this.teleportTo(desiredPos.x, desiredPos.y, desiredPos.z);
             this.setDeltaMovement(Vec3.ZERO);
             return;
         }
 
-        Vec3 motion = desiredPos.subtract(this.position()).scale(0.22D);
-        this.setDeltaMovement(this.getDeltaMovement().scale(0.72D).add(motion));
-        this.setYRot(Mth.rotLerp(0.2F, this.getYRot(), owner.getYRot()));
+        // JCraft 风格：替身不是跑路径追随，而是稳定“附着”在玩家后方点位。
+        double lerp = distance > 2.0D ? 0.5D : 0.35D;
+        double x = Mth.lerp(lerp, this.getX(), desiredPos.x);
+        double y = Mth.lerp(lerp, this.getY(), desiredPos.y);
+        double z = Mth.lerp(lerp, this.getZ(), desiredPos.z);
+        this.setPos(x, y, z);
+        this.setDeltaMovement(Vec3.ZERO);
+
+        float ownerBodyRot = owner.yBodyRot;
+        this.setYRot(Mth.rotLerp(0.4F, this.getYRot(), ownerBodyRot));
+        this.setYHeadRot(this.getYRot());
+        this.yBodyRot = this.getYRot();
+    }
+
+    public Vec3 calculateBackStandPos(Player owner) {
+        Vec3 flatLook = owner.getLookAngle();
+        flatLook = new Vec3(flatLook.x, 0.0D, flatLook.z);
+        if (flatLook.lengthSqr() < 1.0E-4D) {
+            flatLook = Vec3.directionFromRotation(0.0F, owner.getYRot());
+            flatLook = new Vec3(flatLook.x, 0.0D, flatLook.z);
+        }
+        flatLook = flatLook.normalize();
+
+        float sideSign = this.getUUID().hashCode() % 2 == 0 ? 1.0F : -1.0F;
+        Vec3 side = flatLook.yRot((float) (Math.PI / 2D)).normalize().scale(FOLLOW_SIDE_OFFSET * sideSign);
+        Vec3 back = flatLook.scale(-FOLLOW_BACK_DISTANCE);
+
+        return owner.position()
+                .add(0.0D, FOLLOW_HEIGHT_OFFSET, 0.0D)
+                .add(back)
+                .add(side);
     }
 
     @Override

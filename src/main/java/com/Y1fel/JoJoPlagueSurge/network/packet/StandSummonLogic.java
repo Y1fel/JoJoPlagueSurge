@@ -34,7 +34,7 @@ public class StandSummonLogic {
         }
 
         stand.setOwner(player);
-        Vec3 spawnPos = player.position().add(player.getLookAngle().scale(0.85D)).add(0.0D, 1.0D, 0.0D);
+        Vec3 spawnPos = stand.calculateBackStandPos(player);
         stand.moveTo(spawnPos.x, spawnPos.y, spawnPos.z, player.getYRot(), 0.0F);
         level.addFreshEntity(stand);
 
