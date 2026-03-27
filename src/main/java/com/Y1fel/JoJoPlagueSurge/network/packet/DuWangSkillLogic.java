@@ -26,7 +26,7 @@ public class DuWangSkillLogic {
     private static final String SKILL_1_LAST_USE = "jojoplaguesurge.duwang_skill_1_last_use";
     private static final String SKILL_2_LAST_USE = "jojoplaguesurge.duwang_skill_2_last_use";
 
-    private static final int SKILL_1_COOLDOWN_TICKS = DuWangSkillCatalog.STAND_ASSAULT_COOLDOWN_TICKS;
+    private static final int SKILL_1_COOLDOWN_TICKS = DuWangSkillCatalog.TRACKING_TORNADO_COOLDOWN_TICKS;
     private static final int SKILL_2_COOLDOWN_TICKS = DuWangSkillCatalog.HURRICANE_BARRIER_COOLDOWN_TICKS;
     private DuWangSkillLogic() {
     }

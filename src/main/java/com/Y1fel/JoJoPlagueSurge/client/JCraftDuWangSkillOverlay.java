@@ -44,7 +44,7 @@ public final class JCraftDuWangSkillOverlay {
             return;
         }
         long now = mc.level.getGameTime();
-        if (skillId == DuWangSkillCatalog.STAND_ASSAULT_ID) {
+        if (skillId == DuWangSkillCatalog.TRACKING_TORNADO_ID) {
             skill1LastTriggerTick = now;
         } else if (skillId == DuWangSkillCatalog.HURRICANE_BARRIER_ID) {
             skill2LastTriggerTick = now;
@@ -68,8 +68,8 @@ public final class JCraftDuWangSkillOverlay {
         int y1 = TOP;
         int y2 = TOP + SLOT_SIZE + SLOT_GAP;
 
-        renderSkill(gui, baseX, y1, DuWangSkillCatalog.STAND_ASSAULT_ID,
-                skill1LastTriggerTick, DuWangSkillCatalog.STAND_ASSAULT_COOLDOWN_TICKS, "special1", CooldownType.STAND_SP1);
+        renderSkill(gui, baseX, y1, DuWangSkillCatalog.TRACKING_TORNADO_ID,
+                skill1LastTriggerTick, DuWangSkillCatalog.TRACKING_TORNADO_COOLDOWN_TICKS, "special1", CooldownType.STAND_SP1);
         renderSkill(gui, baseX, y2, DuWangSkillCatalog.HURRICANE_BARRIER_ID,
                 skill2LastTriggerTick, DuWangSkillCatalog.HURRICANE_BARRIER_COOLDOWN_TICKS, "special2", CooldownType.STAND_SP2);
     }
