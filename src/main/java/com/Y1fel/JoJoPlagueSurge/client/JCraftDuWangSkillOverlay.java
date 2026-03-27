@@ -2,6 +2,7 @@ package com.Y1fel.JoJoPlagueSurge.client;
 
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.duwang.DuWangEntity;
+import com.Y1fel.JoJoPlagueSurge.network.packet.StandSummonLogic;
 import com.Y1fel.JoJoPlagueSurge.skill.DuWangSkillCatalog;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.arna.jcraft.client.JClientConfig;
@@ -18,7 +19,6 @@ import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import java.util.List;
 
 /**
  * 杜王技能 HUD（按 JCraftAbilityHud 的显隐与冷却来源逻辑对齐）。
@@ -115,12 +115,7 @@ public final class JCraftDuWangSkillOverlay {
     }
 
     private static boolean hasOwnedStand(LocalPlayer player) {
-        List<DuWangEntity> stands = player.level().getEntitiesOfClass(
-                DuWangEntity.class,
-                player.getBoundingBox().inflate(64.0D),
-                stand -> stand.isOwnedBy(player) && stand.isAlive()
-        );
-        return !stands.isEmpty();
+        return !StandSummonLogic.findOwnedStands(player, DuWangEntity.class).isEmpty();
     }
 
     private static double getCooldownRemainRatio(CooldownType cooldownType) {

@@ -5,9 +5,13 @@ import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandEntity;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Comparator;
 import java.util.List;
 
 public class StandSummonLogic {
@@ -28,20 +32,14 @@ public class StandSummonLogic {
             return;
         }
 
-        ServerLevel level = player.serverLevel();
-
-        List<StandEntity> owned = level.getAllEntities().stream()
-                .filter(entity -> entity instanceof StandEntity stand && stand.isOwnedBy(player))
-                .map(entity -> (StandEntity) entity)
-                .toList();
-
+        List<StandEntity> owned = findOwnedStands(player, StandEntity.class);
         if (!owned.isEmpty()) {
-            owned.forEach(StandEntity::discard);
+            owned.forEach(Entity::discard);
             player.displayClientMessage(Component.literal("替身收回"), true);
             return;
         }
 
-        T stand = standType.create(level);
+        T stand = standType.create(player.serverLevel());
         if (stand == null) {
             return;
         }
@@ -50,8 +48,34 @@ public class StandSummonLogic {
         Vec3 spawnPos = player.position().subtract(player.getLookAngle());
         stand.moveTo(spawnPos.x, spawnPos.y, spawnPos.z, player.getYRot(), player.getXRot());
         stand.startRiding(player, true);
-        level.addFreshEntity(stand);
+        player.serverLevel().addFreshEntity(stand);
 
         player.displayClientMessage(Component.literal("替身显现"), true);
+    }
+
+    /**
+     * 统一的 owner-stand 查询入口（服务端尽量全量、客户端按已加载实体）。
+     */
+    public static <T extends StandEntity> List<T> findOwnedStands(Player player, Class<T> standClass) {
+        Level level = player.level();
+        if (level instanceof ServerLevel serverLevel) {
+            return serverLevel.getAllEntities().stream()
+                    .filter(entity -> standClass.isInstance(entity))
+                    .map(standClass::cast)
+                    .filter(stand -> stand.isAlive() && stand.isOwnedBy(player))
+                    .toList();
+        }
+
+        return level.getEntitiesOfClass(
+                standClass,
+                player.getBoundingBox().inflate(128.0D),
+                stand -> stand.isAlive() && stand.isOwnedBy(player)
+        );
+    }
+
+    public static <T extends StandEntity> T findNearestOwnedStand(Player player, Class<T> standClass) {
+        return findOwnedStands(player, standClass).stream()
+                .min(Comparator.comparingDouble(stand -> stand.distanceToSqr(player)))
+                .orElse(null);
     }
 }

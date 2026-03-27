@@ -145,24 +145,6 @@ public class DuWangSkillLogic {
     }
 
     private static DuWangEntity findOwnedStand(ServerPlayer player) {
-        List<DuWangEntity> stands = player.serverLevel().getEntitiesOfClass(
-                DuWangEntity.class,
-                player.getBoundingBox().inflate(64.0D),
-                stand -> stand.isAlive() && stand.isOwnedBy(player)
-        );
-        if (stands.isEmpty()) {
-            return null;
-        }
-        DuWangEntity nearest = stands.get(0);
-        double nearestDist = nearest.distanceToSqr(player);
-        for (int i = 1; i < stands.size(); i++) {
-            DuWangEntity current = stands.get(i);
-            double dist = current.distanceToSqr(player);
-            if (dist < nearestDist) {
-                nearest = current;
-                nearestDist = dist;
-            }
-        }
-        return nearest;
+        return StandSummonLogic.findNearestOwnedStand(player, DuWangEntity.class);
     }
 }
