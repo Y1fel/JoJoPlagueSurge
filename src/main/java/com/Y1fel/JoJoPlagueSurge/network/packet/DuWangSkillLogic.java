@@ -7,6 +7,8 @@ import com.Y1fel.JoJoPlagueSurge.entity.custom.trackingtornado.TrackingTornadoEn
 import com.Y1fel.JoJoPlagueSurge.skill.DuWangSkillCatalog;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.arna.jcraft.common.util.CooldownType;
+import net.arna.jcraft.platform.JComponentPlatformUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
@@ -44,13 +46,11 @@ public class DuWangSkillLogic {
     }
 
     private static void useTrackingHurricane(ServerPlayer player) {
-        long now = player.level().getGameTime();
-        long last = player.getPersistentData().getLong(SKILL_1_LAST_USE);
-        long elapsed = now - last;
+        int cooldown = JComponentPlatformUtils.getCooldowns(player).getCooldown(CooldownType.STAND_SP1);
         Config.duWangSkill1AllowAnyLivingTargetForTest=true;
 
-        if (elapsed < SKILL_1_COOLDOWN_TICKS) {
-            long remainSeconds = (SKILL_1_COOLDOWN_TICKS - elapsed + 19) / 20;
+        if (cooldown > 0) {
+            long remainSeconds = (cooldown + 19L) / 20L;
             player.displayClientMessage(Component.literal("追踪飓风冷却中，还需 " + remainSeconds + " 秒"), true);
             return;
         }
@@ -62,7 +62,8 @@ public class DuWangSkillLogic {
             return;
         }
 
-        player.getPersistentData().putLong(SKILL_1_LAST_USE, now);
+        player.getPersistentData().putLong(SKILL_1_LAST_USE, player.level().getGameTime());
+        JComponentPlatformUtils.getCooldowns(player).setCooldown(CooldownType.STAND_SP1, SKILL_1_COOLDOWN_TICKS);
         broadcastToOpTeam(player, "追踪飓风");
 
         ServerLevel level = player.serverLevel();
@@ -94,17 +95,16 @@ public class DuWangSkillLogic {
     }
 
     private static void useHurricaneBarrier(ServerPlayer player) {
-        long now = player.level().getGameTime();
-        long last = player.getPersistentData().getLong(SKILL_2_LAST_USE);
-        long elapsed = now - last;
+        int cooldown = JComponentPlatformUtils.getCooldowns(player).getCooldown(CooldownType.STAND_SP2);
 
-        if (elapsed < SKILL_2_COOLDOWN_TICKS) {
-            long remainSeconds = (SKILL_2_COOLDOWN_TICKS - elapsed + 19) / 20;
+        if (cooldown > 0) {
+            long remainSeconds = (cooldown + 19L) / 20L;
             player.displayClientMessage(Component.literal("飓风屏障冷却中，还需 " + remainSeconds + " 秒"), true);
             return;
         }
 
-        player.getPersistentData().putLong(SKILL_2_LAST_USE, now);
+        player.getPersistentData().putLong(SKILL_2_LAST_USE, player.level().getGameTime());
+        JComponentPlatformUtils.getCooldowns(player).setCooldown(CooldownType.STAND_SP2, SKILL_2_COOLDOWN_TICKS);
 
         player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 20 * 10, 1));
         player.addEffect(new MobEffectInstance(MobEffects.HEALTH_BOOST, 20 * 10, 0));

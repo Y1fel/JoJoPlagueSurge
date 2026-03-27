@@ -3,8 +3,11 @@ package com.Y1fel.JoJoPlagueSurge.client;
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.duwang.DuWangEntity;
 import com.Y1fel.JoJoPlagueSurge.skill.DuWangSkillCatalog;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.arna.jcraft.client.JClientConfig;
 import net.arna.jcraft.client.gui.hud.JCraftAbilityHud;
 import net.arna.jcraft.common.util.CooldownType;
+import net.arna.jcraft.platform.JComponentPlatformUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
@@ -18,13 +21,7 @@ import net.minecraftforge.fml.common.Mod;
 import java.util.List;
 
 /**
- * 杜王技能 HUD（直接复用 JCraft HUD 绘制方法）。
- *
- * 接口方法（方便后续调试/替换）：
- * - JCraftAbilityHud.getHudX(...)           // 使用 JCraft 的 UI 定位规则
- * - JCraftAbilityHud.renderBorder(...)      // 使用 JCraft 图标边框
- * - JCraftAbilityHud.renderAbsIcon(...)     // 使用 JCraft 图标渲染 + fallback 逻辑
- * - JCraftAbilityHud.renderCooldown(...)    // 使用 JCraft 冷却遮罩渲染
+ * 杜王技能 HUD（按 JCraftAbilityHud 的显隐与冷却来源逻辑对齐）。
  */
 @Mod.EventBusSubscriber(modid = ModEntrance.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class JCraftDuWangSkillOverlay {
@@ -32,23 +29,13 @@ public final class JCraftDuWangSkillOverlay {
     private static final int SLOT_GAP = 6;
     private static final int TOP = 18;
 
-    private static long skill1LastTriggerTick = Long.MIN_VALUE;
-    private static long skill2LastTriggerTick = Long.MIN_VALUE;
+    private static int timeSinceNoCooldowns = 100;
 
     private JCraftDuWangSkillOverlay() {
     }
 
     public static void markSkillTriggered(int skillId) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null) {
-            return;
-        }
-        long now = mc.level.getGameTime();
-        if (skillId == DuWangSkillCatalog.TRACKING_TORNADO_ID) {
-            skill1LastTriggerTick = now;
-        } else if (skillId == DuWangSkillCatalog.HURRICANE_BARRIER_ID) {
-            skill2LastTriggerTick = now;
-        }
+        // 改为由 JCraft cooldown component 驱动，保留兼容入口。
     }
 
     @SubscribeEvent
@@ -63,15 +50,32 @@ public final class JCraftDuWangSkillOverlay {
             return;
         }
 
+        timeSinceNoCooldowns++;
+
+        double cd1Ratio = getCooldownRemainRatio(CooldownType.STAND_SP1);
+        double cd2Ratio = getCooldownRemainRatio(CooldownType.STAND_SP2);
+        boolean coolingDown = cd1Ratio > 0.0D || cd2Ratio > 0.0D;
+
+        final boolean peekAllMoves = JClientConfig.getInstance().isIconHudPeekAllMoves();
+        float alpha = peekAllMoves ? 0.1F : 0.0F;
+        if (coolingDown) {
+            timeSinceNoCooldowns = 0;
+            alpha = 1.0F;
+        }
+
+        if (timeSinceNoCooldowns >= 100 || alpha <= 0.0F) {
+            return;
+        }
+
         GuiGraphics gui = event.getGuiGraphics();
         int baseX = JCraftAbilityHud.getHudX(event.getWindow().getGuiScaledWidth(), 32);
         int y1 = TOP;
         int y2 = TOP + SLOT_SIZE + SLOT_GAP;
 
         renderSkill(gui, baseX, y1, DuWangSkillCatalog.TRACKING_TORNADO_ID,
-                skill1LastTriggerTick, DuWangSkillCatalog.TRACKING_TORNADO_COOLDOWN_TICKS, "special1", CooldownType.STAND_SP1);
+                CooldownType.STAND_SP1, cd1Ratio, "special1", alpha);
         renderSkill(gui, baseX, y2, DuWangSkillCatalog.HURRICANE_BARRIER_ID,
-                skill2LastTriggerTick, DuWangSkillCatalog.HURRICANE_BARRIER_COOLDOWN_TICKS, "special2", CooldownType.STAND_SP2);
+                CooldownType.STAND_SP2, cd2Ratio, "special2", alpha);
     }
 
     private static void renderSkill(
@@ -79,32 +83,35 @@ public final class JCraftDuWangSkillOverlay {
             int x,
             int y,
             int skillId,
-            long lastTriggerTick,
-            int cooldownTicks,
+            CooldownType cooldownType,
+            double remainRatio,
             String fallback,
-            CooldownType cooldownType
+            float alpha
     ) {
-        // [JCraft 接口] 边框渲染
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
         JCraftAbilityHud.renderBorder(gui, x, y);
 
         ResourceLocation icon = ResourceLocation.tryParse(DuWangSkillCatalog.getSkillIconPath(skillId));
         if (icon != null) {
-            // [JCraft 接口] 图标渲染（含 JCraft fallback 机制）
             JCraftAbilityHud.renderAbsIcon(gui, x, y, icon, fallback);
         }
 
-        double remainRatio = getCooldownRemainRatio(lastTriggerTick, cooldownTicks);
-        if (remainRatio > 0) {
-            // [JCraft 接口] 冷却遮罩渲染（参数是 0~1）
+        int remainTicks = JComponentPlatformUtils.getCooldowns(Minecraft.getInstance().player).getCooldown(cooldownType);
+        if (remainTicks > 0 && remainRatio > 0.0D) {
             JCraftAbilityHud.renderCooldown(gui, remainRatio, x, y);
-            String remainText = Integer.toString(Mth.ceil((float) cooldownTicks * (float) remainRatio / 20.0F));
+            String remainText = Integer.toString(Mth.ceil(remainTicks / 20.0F));
             int textX = x + (SLOT_SIZE - Minecraft.getInstance().font.width(remainText)) / 2;
-            gui.drawString(Minecraft.getInstance().font, remainText, textX, y + 7, 0xFFE7E7E7, true);
+            gui.drawString(Minecraft.getInstance().font, remainText, textX, y + 7, withAlpha(0xFFE7E7E7, alpha), true);
         }
 
-        // [JCraft 接口] 直接复用 JCraft 的按键文本映射
         String keyText = JCraftAbilityHud.cooldownTypeToKeybind(cooldownType, true);
-        gui.drawString(Minecraft.getInstance().font, keyText, x + SLOT_SIZE + 4, y + 7, 0xFFDEE6EF, false);
+        gui.drawString(Minecraft.getInstance().font, keyText, x + SLOT_SIZE + 4, y + 7, withAlpha(0xFFDEE6EF, alpha), false);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+    }
+
+    private static int withAlpha(int argb, float alpha) {
+        int a = Mth.clamp((int) (alpha * 255.0F), 0, 255);
+        return (a << 24) | (argb & 0x00FFFFFF);
     }
 
     private static boolean hasOwnedStand(LocalPlayer player) {
@@ -116,15 +123,13 @@ public final class JCraftDuWangSkillOverlay {
         return !stands.isEmpty();
     }
 
-    private static double getCooldownRemainRatio(long lastTriggerTick, int cooldownTicks) {
-        Minecraft mc = Minecraft.getInstance();
-        if (lastTriggerTick == Long.MIN_VALUE || cooldownTicks <= 0 || mc.level == null) {
+    private static double getCooldownRemainRatio(CooldownType cooldownType) {
+        var cooldowns = JComponentPlatformUtils.getCooldowns(Minecraft.getInstance().player);
+        int remain = cooldowns.getCooldown(cooldownType);
+        int initial = cooldowns.getInitialDuration(cooldownType);
+        if (remain <= 0 || initial <= 0) {
             return 0.0D;
         }
-        long elapsed = mc.level.getGameTime() - lastTriggerTick;
-        if (elapsed >= cooldownTicks) {
-            return 0.0D;
-        }
-        return Mth.clamp((cooldownTicks - elapsed) / (double) cooldownTicks, 0.0D, 1.0D);
+        return Mth.clamp(remain / (double) initial, 0.0D, 1.0D);
     }
 }
