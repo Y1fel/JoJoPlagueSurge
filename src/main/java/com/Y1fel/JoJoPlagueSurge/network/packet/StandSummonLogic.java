@@ -24,9 +24,9 @@ public class StandSummonLogic {
     }
 
     /**
-     * JCraft 风格的可复用替身显现/收回逻辑：
+     * 对齐 JCraft summon/recall 主流程：
      * 1) 若已有该玩家拥有的替身则回收
-     * 2) 否则在玩家身后生成并绑定 owner
+     * 2) 否则在玩家背后生成并绑定 owner
      */
     public static <T extends StandEntity> void toggleStand(ServerPlayer player, EntityType<T> standType) {
         if (player.isSpectator()) {
@@ -35,7 +35,7 @@ public class StandSummonLogic {
 
         List<StandEntity> owned = findOwnedStands(player, StandEntity.class);
         if (!owned.isEmpty()) {
-            owned.forEach(Entity::discard);
+            owned.forEach(Entity::stopRiding);
             player.displayClientMessage(Component.literal("替身收回"), true);
             return;
         }

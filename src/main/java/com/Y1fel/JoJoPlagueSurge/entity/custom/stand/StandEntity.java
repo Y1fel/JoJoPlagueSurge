@@ -132,13 +132,10 @@ public abstract class StandEntity extends Monster {
     }
 
     protected void followOwner(Player owner) {
-        // 对齐 JCraft：替身作为 rider 时，位置由“玩家朝向 + rotationOffset + distanceOffset”决定。
+        // 对齐 JCraft：保持 rider 关系，位置由 EntityMixin 注入 positionRider 来修正。
         if (this.getVehicle() != owner) {
             this.startRiding(owner, true);
         }
-
-        Vec3 desiredPos = calculateBackStandPos(owner);
-        this.setPos(desiredPos.x, desiredPos.y, desiredPos.z);
         this.setDeltaMovement(Vec3.ZERO);
 
         this.setYRot(owner.getYRot());
@@ -152,8 +149,9 @@ public abstract class StandEntity extends Monster {
         double xOffset = Mth.cos(yawRadians) * FOLLOW_DISTANCE;
         double zOffset = Mth.sin(yawRadians) * FOLLOW_DISTANCE;
 
-        // JCraft 对应项：passenger.getMyRidingOffset() + heightOffset
-        double yOffset = this.getMyRidingOffset() + FOLLOW_HEIGHT_OFFSET;
+        // 对齐 JCraft EntityMixinLogic：passenger.getMyRidingOffset() + heightOffset。
+        double heightOffset = Vec3.directionFromRotation(owner.getXRot(), owner.getYRot()).y;
+        double yOffset = this.getMyRidingOffset() + FOLLOW_HEIGHT_OFFSET + heightOffset;
         return owner.position().add(xOffset, yOffset, zOffset);
     }
 
@@ -163,6 +161,17 @@ public abstract class StandEntity extends Monster {
             return false;
         }
         return super.hurt(source, amount);
+    }
+
+    @Override
+    public void stopRiding() {
+        if (this.getVehicle() == null) {
+            return;
+        }
+        super.stopRiding();
+        if (!this.level().isClientSide) {
+            this.discard();
+        }
     }
 
     @Override
