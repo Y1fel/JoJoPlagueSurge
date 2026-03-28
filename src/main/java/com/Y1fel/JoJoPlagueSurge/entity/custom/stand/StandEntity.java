@@ -5,7 +5,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -29,8 +28,8 @@ public abstract class StandEntity extends Monster {
     private static final EntityDataAccessor<Optional<UUID>> OWNER_UUID =
             SynchedEntityData.defineId(StandEntity.class, EntityDataSerializers.OPTIONAL_UUID);
 
-    private static final double FOLLOW_DISTANCE = 1.0D;
-    private static final float FOLLOW_ROTATION_OFFSET_DEGREES = -90.0F;
+    private static final double FOLLOW_BACK_DISTANCE = 0.85D;
+    private static final double FOLLOW_LEFT_DISTANCE = 0.65D;
     private static final double FOLLOW_HEIGHT_OFFSET = 1.05D;
 
     private int missingOwnerTicks;
@@ -145,14 +144,21 @@ public abstract class StandEntity extends Monster {
     }
 
     public Vec3 calculateBackStandPos(Player owner) {
-        float yawRadians = (float) Math.toRadians(owner.getYRot() + FOLLOW_ROTATION_OFFSET_DEGREES);
-        double xOffset = Mth.cos(yawRadians) * FOLLOW_DISTANCE;
-        double zOffset = Mth.sin(yawRadians) * FOLLOW_DISTANCE;
+        Vec3 forward = owner.getLookAngle();
+        Vec3 flatForward = new Vec3(forward.x, 0.0D, forward.z);
+        if (flatForward.lengthSqr() < 1.0E-5D) {
+            flatForward = Vec3.directionFromRotation(0.0F, owner.getYRot());
+            flatForward = new Vec3(flatForward.x, 0.0D, flatForward.z);
+        }
+        flatForward = flatForward.normalize();
+        Vec3 left = new Vec3(-flatForward.z, 0.0D, flatForward.x);
+
+        Vec3 horizontalOffset = flatForward.scale(-FOLLOW_BACK_DISTANCE).add(left.scale(FOLLOW_LEFT_DISTANCE));
 
         // 对齐 JCraft EntityMixinLogic：passenger.getMyRidingOffset() + heightOffset。
         double heightOffset = Vec3.directionFromRotation(owner.getXRot(), owner.getYRot()).y;
         double yOffset = this.getMyRidingOffset() + FOLLOW_HEIGHT_OFFSET + heightOffset;
-        return owner.position().add(xOffset, yOffset, zOffset);
+        return owner.position().add(horizontalOffset.x, yOffset, horizontalOffset.z);
     }
 
     @Override

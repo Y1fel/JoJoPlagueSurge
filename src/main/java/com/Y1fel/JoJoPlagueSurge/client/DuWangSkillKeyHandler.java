@@ -3,7 +3,6 @@ package com.Y1fel.JoJoPlagueSurge.client;
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
 import com.Y1fel.JoJoPlagueSurge.network.ModNetwork;
 import com.Y1fel.JoJoPlagueSurge.network.packet.C2SUseDuWangSkillPacket;
-import net.arna.jcraft.client.JCraftClient;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -14,12 +13,12 @@ public class DuWangSkillKeyHandler {
 
     @SubscribeEvent
     public static void onKeyInput(InputEvent.Key event) {
-        if (JCraftClient.special1Key != null && JCraftClient.special1Key.isPressedThisTick()) {
+        while (ModKeyMappings.DUWANG_SKILL_1.consumeClick()) {
             ModNetwork.CHANNEL.sendToServer(new C2SUseDuWangSkillPacket(1));
             JCraftDuWangSkillOverlay.markSkillTriggered(1);
         }
 
-        if (JCraftClient.special2Key != null && JCraftClient.special2Key.isPressedThisTick()) {
+        while (ModKeyMappings.DUWANG_SKILL_2.consumeClick()) {
             ModNetwork.CHANNEL.sendToServer(new C2SUseDuWangSkillPacket(2));
             JCraftDuWangSkillOverlay.markSkillTriggered(2);
         }

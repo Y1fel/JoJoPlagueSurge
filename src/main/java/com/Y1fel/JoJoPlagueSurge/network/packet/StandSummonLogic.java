@@ -46,7 +46,7 @@ public class StandSummonLogic {
         }
 
         stand.setOwner(player);
-        Vec3 spawnPos = player.position().subtract(player.getLookAngle());
+        Vec3 spawnPos = stand.calculateBackStandPos(player);
         stand.moveTo(spawnPos.x, spawnPos.y, spawnPos.z, player.getYRot(), player.getXRot());
         stand.startRiding(player, true);
         player.serverLevel().addFreshEntity(stand);
