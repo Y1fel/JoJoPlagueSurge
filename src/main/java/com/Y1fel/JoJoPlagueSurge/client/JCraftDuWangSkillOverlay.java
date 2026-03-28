@@ -108,7 +108,7 @@ public final class JCraftDuWangSkillOverlay {
             JCraftAbilityHud.renderCooldown(gui, remainRatio, x, y);
         }
 
-        String keyText = JCraftAbilityHud.cooldownTypeToKeybind(cooldownType, true);
+        String keyText = getSkillKeyText(cooldownType);
         gui.drawString(
                 Minecraft.getInstance().font,
                 keyText,
@@ -131,6 +131,16 @@ public final class JCraftDuWangSkillOverlay {
             return 0.0D;
         }
         return Mth.clamp(remain / (double) initial, 0.0D, 1.0D);
+    }
+
+    private static String getSkillKeyText(CooldownType cooldownType) {
+        if (cooldownType == CooldownType.STAND_SP1) {
+            return ModKeyMappings.DUWANG_SKILL_1.getTranslatedKeyMessage().getString();
+        }
+        if (cooldownType == CooldownType.STAND_SP2) {
+            return ModKeyMappings.DUWANG_SKILL_2.getTranslatedKeyMessage().getString();
+        }
+        return "";
     }
 
     private static void renderStandGauge(GuiGraphics gui, int screenWidth, int screenHeight, DuWangEntity stand) {
