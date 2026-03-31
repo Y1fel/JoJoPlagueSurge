@@ -45,6 +45,13 @@ public class ModItems {
                     0x8ED6FF,
                     new Item.Properties()
             ));
+    public static final RegistryObject<ForgeSpawnEggItem> MIRACLE_SPAWN_EGG =
+            ITEMS.register("miracle_spawn_egg", () -> new ForgeSpawnEggItem(
+                    ModEntities.MIRACLE,
+                    0x140C22,
+                    0xE1C56A,
+                    new Item.Properties()
+            ));
     public static void register(IEventBus bus) {
         ITEMS.register(bus);
     }

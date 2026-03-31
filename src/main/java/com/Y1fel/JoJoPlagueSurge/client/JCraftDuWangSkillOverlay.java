@@ -8,7 +8,6 @@ import com.Y1fel.JoJoPlagueSurge.network.packet.StandSummonLogic;
 import com.Y1fel.JoJoPlagueSurge.skill.BlueHawaiiSkillCatalog;
 import com.Y1fel.JoJoPlagueSurge.skill.DuWangSkillCatalog;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.arna.jcraft.client.JClientConfig;
 import net.arna.jcraft.client.gui.hud.JCraftAbilityHud;
 import net.arna.jcraft.common.util.ColorUtils;
 import net.arna.jcraft.common.util.CooldownType;
@@ -18,7 +17,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -33,13 +31,10 @@ public final class JCraftDuWangSkillOverlay {
     private static final int GAUGE_HEIGHT = 5;
     private static final int GAUGE_Y_OFFSET = -65;
 
-    private static int timeSinceNoCooldowns = 100;
-
     private JCraftDuWangSkillOverlay() {
     }
 
     public static void markSkillTriggered(int skillId) {
-        timeSinceNoCooldowns = 0;
     }
 
     @SubscribeEvent
@@ -57,23 +52,9 @@ public final class JCraftDuWangSkillOverlay {
 
         renderStandGauge(event.getGuiGraphics(), event.getWindow().getGuiScaledWidth(), event.getWindow().getGuiScaledHeight(), stand);
 
-        timeSinceNoCooldowns++;
-
         double cd1Ratio = getCooldownRemainRatio(CooldownType.STAND_SP1);
         double cd2Ratio = getCooldownRemainRatio(CooldownType.STAND_SP2);
-        boolean coolingDown = cd1Ratio > 0.0D || cd2Ratio > 0.0D;
-        boolean forceShow = stand instanceof BlueHawaiiEntity && player.hasEffect(MobEffects.GLOWING);
-
-        final boolean peekAllMoves = JClientConfig.getInstance().isIconHudPeekAllMoves();
-        float alpha = peekAllMoves ? 0.1F : 0.0F;
-        if (coolingDown || forceShow) {
-            timeSinceNoCooldowns = 0;
-            alpha = 1.0F;
-        }
-
-        if (timeSinceNoCooldowns >= 100 || alpha <= 0.0F) {
-            return;
-        }
+        float alpha = 1.0F;
 
         GuiGraphics gui = event.getGuiGraphics();
         int baseX = JCraftAbilityHud.getHudX(event.getWindow().getGuiScaledWidth(), 32);

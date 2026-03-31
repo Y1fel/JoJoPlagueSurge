@@ -7,8 +7,8 @@ package com.Y1fel.JoJoPlagueSurge.skill;
  */
 public final class DuWangSkillCatalog {
     // 以下图标路径作为 JCraft UI 接口占位保留；资源可后续替换为独立技能图标。
-    public static final String TRACKING_TRONADO_ICON = "jojoplaguesurge:textures/item/bloody_tooth.png";
-    public static final String HURRICANE_BARRIER_ICON = "jojoplaguesurge:textures/item/duwang_spawn_egg.png";
+    public static final String TRACKING_TRONADO_ICON = "jojoplaguesurge:textures/skill/tracking_tornado.png";
+    public static final String HURRICANE_BARRIER_ICON = "jojoplaguesurge:textures/skill/dbh_sheild.png";
     public static final int TRACKING_TORNADO_ID = 1;
     public static final int HURRICANE_BARRIER_ID = 2;
 

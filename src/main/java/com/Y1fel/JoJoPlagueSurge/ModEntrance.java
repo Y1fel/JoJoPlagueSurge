@@ -56,6 +56,9 @@ public class ModEntrance {
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
+        if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
+            event.accept(ModBlocks.OZONE);
+        }
         if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(ModItems.BLOODY_TOOTH);
             event.accept(ModItems.STAND_DISC);
@@ -65,6 +68,7 @@ public class ModEntrance {
             event.accept(ModItems.BLUEHAWAII_SPAWN_EGG);
             event.accept(ModItems.DUVILLAGER_SPAWN_EGG);
             event.accept(ModItems.DUWANG_SPAWN_EGG);
+            event.accept(ModItems.MIRACLE_SPAWN_EGG);
         }
     }
 

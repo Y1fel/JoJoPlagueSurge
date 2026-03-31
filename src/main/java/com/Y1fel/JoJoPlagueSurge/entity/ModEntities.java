@@ -4,6 +4,7 @@ import com.Y1fel.JoJoPlagueSurge.ModEntrance;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.bluehawaii.BlueHawaiiEntity;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.duvillager.DuVillagerEntity;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.duwang.DuWangEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.miracle.MiracleEntity;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.trackingtornado.TrackingTornadoEntity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -30,6 +31,11 @@ public class ModEntities {
                     ()->EntityType.Builder.of(DuWangEntity::new,MobCategory.MONSTER)
                             .sized(0.6F, 1.8F)
                             .build("duwang"));
+    public static final RegistryObject<EntityType<MiracleEntity>> MIRACLE =
+            ENTITY_TYPES.register("miracle",
+                    ()->EntityType.Builder.of(MiracleEntity::new,MobCategory.MONSTER)
+                            .sized(0.6f,1.8f)
+                            .build("miracle"));
     public static final RegistryObject<EntityType<TrackingTornadoEntity>> TRACKING_TORNADO =
             ENTITY_TYPES.register("tracking_tornado",
                     ()->EntityType.Builder.of(TrackingTornadoEntity::new,MobCategory.MISC)

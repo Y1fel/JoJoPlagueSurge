@@ -19,9 +19,11 @@ public class ModCreativeModeTabs {
                     .icon(()->new ItemStack(ModItems.BLUEHAWAII_SPAWN_EGG.get()))
                     .title(Component.translatable("itemGroup.jojo_tab"))
                     .displayItems((pParameters, pOutput) -> {
+                        pOutput.accept(ModBlocks.OZONE.get());
                         pOutput.accept(ModItems.BLUEHAWAII_SPAWN_EGG.get());
                         pOutput.accept(ModItems.DUVILLAGER_SPAWN_EGG.get());
                         pOutput.accept(ModItems.DUWANG_SPAWN_EGG.get());
+                        pOutput.accept(ModItems.MIRACLE_SPAWN_EGG.get());
                         pOutput.accept(ModItems.BLOODY_TOOTH.get());
                         pOutput.accept(ModItems.STAND_DISC.get());
                         pOutput.accept(ModItems.BLUEHAWAII_STAND_DISC.get());
