@@ -23,5 +23,10 @@ public class DuWangSkillKeyHandler {
             JCraftDuWangSkillOverlay.markSkillTriggered(2);
         }
 
+        while (ModKeyMappings.DUWANG_SKILL_3.consumeClick()) {
+            ModNetwork.CHANNEL.sendToServer(new C2SUseDuWangSkillPacket(3));
+            JCraftDuWangSkillOverlay.markSkillTriggered(3);
+        }
+
     }
 }

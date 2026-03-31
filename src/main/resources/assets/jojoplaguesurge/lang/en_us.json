@@ -4,7 +4,7 @@
   "entity.jojoplaguesurge.duwang": "Doobie Wah",
   "entity.jojoplaguesurge.miracle": "Wonder of U",
   "entity.jojoplaguesurge.tracking_tornado": "Tracking Tornado",
-  "block.jojoplaguesurge.ozone": "Ozone",
+  "block.jojoplaguesurge.ozone": "Ozone Babe",
   "item.jojoplaguesurge.bluehawaii_spawn_egg": "Blue Hawaii Spawn Egg",
   "item.jojoplaguesurge.duvillager_spawn_egg": "Morioh Villager Spawn Egg",
   "item.jojoplaguesurge.duwang_spawn_egg": "Doobie Wah Spawn Egg",
@@ -14,6 +14,7 @@
   "item.jojoplaguesurge.bluehawaii_stand_disc": "Blue Hawaii Summon Disc",
   "itemGroup.jojo_tab": "JoJo Tab",
   "key.categories.jojoplaguesurge": "JoJo Plague Surge",
-  "key.jojoplaguesurge.duwang_skill_1": "V Skill",
-  "key.jojoplaguesurge.duwang_skill_2": "B Skill"
+  "key.jojoplaguesurge.duwang_skill_1": "Z Skill",
+  "key.jojoplaguesurge.duwang_skill_2": "X Skill",
+  "key.jojoplaguesurge.duwang_skill_3": "C Skill"
 }

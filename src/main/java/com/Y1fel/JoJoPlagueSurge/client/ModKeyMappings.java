@@ -13,7 +13,7 @@ public class ModKeyMappings {
             "key." + ModEntrance.MODID + ".duwang_skill_1",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_V,
+            GLFW.GLFW_KEY_Z,
             CATEGORY
     );
 
@@ -21,7 +21,15 @@ public class ModKeyMappings {
             "key." + ModEntrance.MODID + ".duwang_skill_2",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_B,
+            GLFW.GLFW_KEY_X,
+            CATEGORY
+    );
+
+    public static final KeyMapping DUWANG_SKILL_3 = new KeyMapping(
+            "key." + ModEntrance.MODID + ".duwang_skill_3",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_C,
             CATEGORY
     );
 

@@ -73,7 +73,7 @@ public class TrackingTornadoEntity extends Entity implements GeoEntity{
         super.tick();
 
         lifeTicks++;
-        if (lifeTicks > 20 * 8) { // 8秒寿命
+        if (lifeTicks > 20 * 15) { // 8秒寿命
             this.discard();
             return;
         }

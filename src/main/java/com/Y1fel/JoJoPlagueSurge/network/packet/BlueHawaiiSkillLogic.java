@@ -1,6 +1,8 @@
 package com.Y1fel.JoJoPlagueSurge.network.packet;
 
+import com.Y1fel.JoJoPlagueSurge.Config;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.bluehawaii.BlueHawaiiEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.duvillager.DuVillagerEntity;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandEntity;
 import com.Y1fel.JoJoPlagueSurge.item.ModItems;
 import net.arna.jcraft.common.util.CooldownType;
@@ -9,25 +11,29 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 public final class BlueHawaiiSkillLogic {
+    private static final String HAWAII_TARGET_TAG = "hawaii_target";
     private static final String LOCKED_TARGET_UUID = "jojoplaguesurge.bluehawaii.locked_target";
     private static final String HUNT_ACTIVE = "jojoplaguesurge.bluehawaii.hunt_active";
     private static final String HAD_TOOTH_LAST_TICK = "jojoplaguesurge.bluehawaii.had_tooth_last_tick";
@@ -39,6 +45,7 @@ public final class BlueHawaiiSkillLogic {
     private static final int RELEASE_COOLDOWN_TICKS = 20 * 60 * 20;
     private static final double HUNT_RADIUS = 256.0D;
     private static final double CHASE_SPEED = 1.35D;
+    private static final double TEST_LOCK_RANGE = 32.0D;
 
     private BlueHawaiiSkillLogic() {
     }
@@ -49,8 +56,10 @@ public final class BlueHawaiiSkillLogic {
         }
 
         if (skillId == 1) {
-            activateHunt(player);
+            useToothMark(player);
         } else if (skillId == 2) {
+            activateHunt(player);
+        } else if (skillId == 3) {
             releaseHunt(player, true);
         }
     }
@@ -69,6 +78,22 @@ public final class BlueHawaiiSkillLogic {
         return player.getPersistentData().getBoolean(HUNT_ACTIVE);
     }
 
+    private static void useToothMark(ServerPlayer player) {
+        if (!Config.BLUE_HAWAII_SKILL_1_ALLOW_ANY_ENTITY_TARGET_FOR_TEST.get()) {
+            player.displayClientMessage(Component.literal("请通过带血的牙齿进行标记"), true);
+            return;
+        }
+
+        Entity target = findNearestTestTarget(player);
+        if (target == null) {
+            player.displayClientMessage(Component.literal("范围内没有可锁定实体"), true);
+            return;
+        }
+
+        setLockedTarget(player, target);
+        notifyLock(player.server.getPlayerList().getPlayers(), target, player, true);
+    }
+
     private static void detectNewToothHolder(ServerPlayer player) {
         CompoundTag tag = player.getPersistentData();
         boolean hasTooth = hasBloodyTooth(player);
@@ -83,27 +108,15 @@ public final class BlueHawaiiSkillLogic {
 
     private static void lockTargetForBlueHawaiiOwners(ServerPlayer target) {
         List<ServerPlayer> players = target.server.getPlayerList().getPlayers();
-        Component message = Component.literal(target.getScoreboardName() + " 已被锁定")
-                .withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD);
-        Set<UUID> notified = new HashSet<>();
-
         for (ServerPlayer candidate : players) {
             if (!hasBlueHawaiiStand(candidate) || candidate == target) {
                 continue;
             }
 
-            candidate.getPersistentData().putUUID(LOCKED_TARGET_UUID, target.getUUID());
-            candidate.sendSystemMessage(message);
-            notified.add(candidate.getUUID());
+            setLockedTarget(candidate, target);
         }
 
-        for (ServerPlayer candidate : players) {
-            if (candidate.getTeam() != null
-                    && "op".equals(candidate.getTeam().getName())
-                    && !notified.contains(candidate.getUUID())) {
-                candidate.sendSystemMessage(message);
-            }
-        }
+        notifyLock(players, target, target, false);
     }
 
     private static void activateHunt(ServerPlayer player) {
@@ -123,8 +136,8 @@ public final class BlueHawaiiSkillLogic {
             return;
         }
 
-        ServerPlayer target = getLockedTarget(player);
-        if (target == null || !target.isAlive() || target.serverLevel() != player.serverLevel()) {
+        Entity target = getLockedTarget(player);
+        if (target == null || !target.isAlive() || target.level() != player.level()) {
             player.displayClientMessage(Component.literal("没有可追击的锁定目标"), true);
             return;
         }
@@ -147,8 +160,8 @@ public final class BlueHawaiiSkillLogic {
             return;
         }
 
-        ServerPlayer target = getLockedTarget(player);
-        if (target == null || !target.isAlive() || target.serverLevel() != player.serverLevel()) {
+        Entity target = getLockedTarget(player);
+        if (target == null || !target.isAlive() || target.level() != player.level()) {
             releaseHunt(player, true);
             return;
         }
@@ -162,7 +175,7 @@ public final class BlueHawaiiSkillLogic {
         player.fallDistance = 0.0F;
 
         applyOwnerEffects(player);
-        directNearbyCreatures(player, target);
+        directNearbyDuVillagers(player, target);
     }
 
     private static void releaseHunt(ServerPlayer player, boolean startCooldown) {
@@ -226,27 +239,28 @@ public final class BlueHawaiiSkillLogic {
         }
     }
 
-    private static void directNearbyCreatures(ServerPlayer owner, ServerPlayer target) {
-        List<LivingEntity> entities = owner.serverLevel().getEntitiesOfClass(
-                LivingEntity.class,
+    private static void directNearbyDuVillagers(ServerPlayer owner, Entity target) {
+        List<DuVillagerEntity> villagers = owner.serverLevel().getEntitiesOfClass(
+                DuVillagerEntity.class,
                 owner.getBoundingBox().inflate(HUNT_RADIUS),
                 entity -> entity.isAlive()
-                        && entity != owner
                         && entity != target
-                        && !(entity instanceof Player)
-                        && !(entity instanceof StandEntity)
         );
 
-        for (LivingEntity entity : entities) {
-            if (entity instanceof Mob mob) {
-                mob.setTarget(target);
-                mob.getNavigation().moveTo(target, CHASE_SPEED);
-                mob.getLookControl().setLookAt(target, 30.0F, 30.0F);
-            } else {
-                Vec3 direction = target.position().subtract(entity.position());
-                if (direction.lengthSqr() > 1.0E-4D) {
-                    entity.setDeltaMovement(entity.getDeltaMovement().scale(0.4D).add(direction.normalize().scale(0.25D)));
+        for (DuVillagerEntity villager : villagers) {
+            if (target instanceof LivingEntity livingTarget) {
+                villager.setTarget(livingTarget);
+                villager.getNavigation().moveTo(livingTarget, CHASE_SPEED);
+                villager.getLookControl().setLookAt(livingTarget, 30.0F, 30.0F);
+
+                double attackReach = villager.getBbWidth() + livingTarget.getBbWidth() + 1.5D;
+                if (villager.distanceToSqr(livingTarget) <= attackReach * attackReach) {
+                    villager.doHurtTarget(livingTarget);
                 }
+            } else {
+                villager.setTarget(null);
+                villager.getNavigation().moveTo(target.getX(), target.getY(), target.getZ(), CHASE_SPEED);
+                villager.getLookControl().setLookAt(target, 30.0F, 30.0F);
             }
         }
     }
@@ -272,14 +286,92 @@ public final class BlueHawaiiSkillLogic {
     }
 
     @Nullable
-    private static ServerPlayer getLockedTarget(ServerPlayer player) {
+    private static Entity getLockedTarget(ServerPlayer player) {
         CompoundTag tag = player.getPersistentData();
         if (!tag.hasUUID(LOCKED_TARGET_UUID)) {
             return null;
         }
 
-        UUID uuid = tag.getUUID(LOCKED_TARGET_UUID);
-        return player.server.getPlayerList().getPlayer(uuid);
+        return findEntityByUuid(player.serverLevel(), tag.getUUID(LOCKED_TARGET_UUID));
+    }
+
+    private static void setLockedTarget(ServerPlayer player, Entity target) {
+        Entity previousTarget = getLockedTarget(player);
+        if (previousTarget != null && previousTarget != target) {
+            previousTarget.removeTag(HAWAII_TARGET_TAG);
+        }
+
+        player.getPersistentData().putUUID(LOCKED_TARGET_UUID, target.getUUID());
+        target.addTag(HAWAII_TARGET_TAG);
+    }
+
+    @Nullable
+    private static Entity findNearestTestTarget(ServerPlayer player) {
+        AABB area = player.getBoundingBox().inflate(TEST_LOCK_RANGE);
+        List<Entity> candidates = player.serverLevel().getEntities(
+                player,
+                area,
+                entity -> entity.isAlive()
+                        && entity != player
+                        && !(entity instanceof StandEntity)
+                        && !(entity instanceof BlueHawaiiEntity)
+        );
+
+        return candidates.stream()
+                .min(Comparator.comparingDouble(entity -> entity.distanceToSqr(player)))
+                .orElse(null);
+    }
+
+    @Nullable
+    private static Entity findEntityByUuid(ServerLevel level, UUID uuid) {
+        Entity sameLevel = level.getEntity(uuid);
+        if (sameLevel != null) {
+            return sameLevel;
+        }
+
+        for (ServerLevel serverLevel : level.getServer().getAllLevels()) {
+            Entity entity = serverLevel.getEntity(uuid);
+            if (entity != null) {
+                return entity;
+            }
+        }
+
+        return null;
+    }
+
+    private static void notifyLock(List<ServerPlayer> players, Entity target, ServerPlayer source, boolean echoToSource) {
+        Component message = Component.literal(getTargetDisplayName(target) + " 已被锁定")
+                .withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD);
+        Set<UUID> notified = new HashSet<>();
+
+        for (ServerPlayer candidate : players) {
+            if (!hasBlueHawaiiStand(candidate)) {
+                continue;
+            }
+            if (!echoToSource && candidate == source) {
+                continue;
+            }
+
+            candidate.sendSystemMessage(message);
+            notified.add(candidate.getUUID());
+        }
+
+        for (ServerPlayer candidate : players) {
+            if (candidate.getTeam() != null
+                    && "op".equals(candidate.getTeam().getName())
+                    && !notified.contains(candidate.getUUID())) {
+                candidate.sendSystemMessage(message);
+            }
+        }
+    }
+
+    private static String getTargetDisplayName(Entity target) {
+        String displayName = target.getName().getString();
+        if (!displayName.isBlank()) {
+            return displayName;
+        }
+
+        return target.getStringUUID();
     }
 
     private static Vec3 getAnchor(ServerPlayer player) {

@@ -23,14 +23,25 @@ public class ModBlocks {
     public static final RegistryObject<Block> OZONE =
             registerBlock("ozone", () -> new OzoneBlock(BlockBehaviour.Properties.copy(Blocks.GLASS)
                     .strength(1.0F, 3.0F)
-                    .noOcclusion()));
+                    .noOcclusion()), new Item.Properties().stacksTo(1));
 
     private static <T extends Block> void registerBlockItems(String name, RegistryObject<T> block) {
         ModItems.ITEMS.register(name, ()->new BlockItem(block.get(),new Item.Properties()));
     }
+
+    private static <T extends Block> void registerBlockItems(String name, RegistryObject<T> block, Item.Properties properties) {
+        ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), properties));
+    }
+
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {
         RegistryObject<T> blocks = TEST_BLOCKS.register(name,block);
         registerBlockItems(name,blocks);
+        return blocks;
+    }
+
+    private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block, Item.Properties properties) {
+        RegistryObject<T> blocks = TEST_BLOCKS.register(name, block);
+        registerBlockItems(name, blocks, properties);
         return blocks;
     }
     public static void register(IEventBus eventBus) {

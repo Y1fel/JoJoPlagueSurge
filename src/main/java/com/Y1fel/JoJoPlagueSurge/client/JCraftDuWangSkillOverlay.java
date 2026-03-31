@@ -4,9 +4,11 @@ import com.Y1fel.JoJoPlagueSurge.ModEntrance;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.bluehawaii.BlueHawaiiEntity;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.duwang.DuWangEntity;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandEntity;
+import com.Y1fel.JoJoPlagueSurge.network.packet.OzoneSkillLogic;
 import com.Y1fel.JoJoPlagueSurge.network.packet.StandSummonLogic;
 import com.Y1fel.JoJoPlagueSurge.skill.BlueHawaiiSkillCatalog;
 import com.Y1fel.JoJoPlagueSurge.skill.DuWangSkillCatalog;
+import com.Y1fel.JoJoPlagueSurge.skill.OzoneSkillCatalog;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.arna.jcraft.client.gui.hud.JCraftAbilityHud;
 import net.arna.jcraft.common.util.ColorUtils;
@@ -21,6 +23,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+
+import javax.annotation.Nullable;
 
 @Mod.EventBusSubscriber(modid = ModEntrance.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class JCraftDuWangSkillOverlay {
@@ -45,6 +49,15 @@ public final class JCraftDuWangSkillOverlay {
         }
 
         LocalPlayer player = mc.player;
+        if (OzoneSkillLogic.shouldRenderHud(player)) {
+            GuiGraphics gui = event.getGuiGraphics();
+            int baseX = JCraftAbilityHud.getHudX(event.getWindow().getGuiScaledWidth(), 32);
+            double cd1Ratio = getCooldownRemainRatio(CooldownType.STAND_SP1);
+            double cd2Ratio = getCooldownRemainRatio(CooldownType.STAND_SP2);
+            renderOzoneSkills(gui, baseX, cd1Ratio, cd2Ratio, 1.0F);
+            return;
+        }
+
         StandEntity stand = getOwnedStand(player);
         if (stand == null) {
             return;
@@ -81,14 +94,26 @@ public final class JCraftDuWangSkillOverlay {
     private static void renderBlueHawaiiSkills(GuiGraphics gui, int baseX, double cd1Ratio, double cd2Ratio, float alpha) {
         renderSkill(gui, baseX, SPACING * 11,
                 BlueHawaiiSkillCatalog.getSkillIconPath(BlueHawaiiSkillCatalog.TOOTH_MARK_ID),
-                null, 0.0D, "tooth", "ITEM", alpha);
+                null, 0.0D, "tooth",
+                ModKeyMappings.DUWANG_SKILL_1.getTranslatedKeyMessage().getString(), alpha);
         renderSkill(gui, baseX, SPACING * 14,
                 BlueHawaiiSkillCatalog.getSkillIconPath(BlueHawaiiSkillCatalog.HUNT_ACTIVATE_ID),
-                CooldownType.STAND_SP1, cd1Ratio, "hunt",
-                ModKeyMappings.DUWANG_SKILL_1.getTranslatedKeyMessage().getString(), alpha);
+                null, 0.0D, "hunt",
+                ModKeyMappings.DUWANG_SKILL_2.getTranslatedKeyMessage().getString(), alpha);
         renderSkill(gui, baseX, SPACING * 17,
                 BlueHawaiiSkillCatalog.getSkillIconPath(BlueHawaiiSkillCatalog.HUNT_RELEASE_ID),
                 CooldownType.STAND_SP2, cd2Ratio, "release",
+                ModKeyMappings.DUWANG_SKILL_3.getTranslatedKeyMessage().getString(), alpha);
+    }
+
+    private static void renderOzoneSkills(GuiGraphics gui, int baseX, double cd1Ratio, double cd2Ratio, float alpha) {
+        renderSkill(gui, baseX, SPACING * 14,
+                OzoneSkillCatalog.getSkillIconPath(OzoneSkillCatalog.MARK_TARGET_1_ID),
+                CooldownType.STAND_SP1, cd1Ratio, "ozone1",
+                ModKeyMappings.DUWANG_SKILL_1.getTranslatedKeyMessage().getString(), alpha);
+        renderSkill(gui, baseX, SPACING * 17,
+                OzoneSkillCatalog.getSkillIconPath(OzoneSkillCatalog.MARK_TARGET_2_ID),
+                CooldownType.STAND_SP2, cd2Ratio, "ozone2",
                 ModKeyMappings.DUWANG_SKILL_2.getTranslatedKeyMessage().getString(), alpha);
     }
 
@@ -96,8 +121,8 @@ public final class JCraftDuWangSkillOverlay {
             GuiGraphics gui,
             int x,
             int y,
-            String iconPath,
-            CooldownType cooldownType,
+            @Nullable String iconPath,
+            @Nullable CooldownType cooldownType,
             double remainRatio,
             String fallback,
             String keyText,
@@ -106,9 +131,11 @@ public final class JCraftDuWangSkillOverlay {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
         JCraftAbilityHud.renderBorder(gui, x, y);
 
-        ResourceLocation icon = ResourceLocation.tryParse(iconPath);
-        if (icon != null) {
-            JCraftAbilityHud.renderAbsIcon(gui, x, y, icon, fallback);
+        if (iconPath != null) {
+            ResourceLocation icon = ResourceLocation.tryParse(iconPath);
+            if (icon != null) {
+                JCraftAbilityHud.renderAbsIcon(gui, x, y, icon, fallback);
+            }
         }
 
         int remainTicks = cooldownType == null

@@ -25,7 +25,9 @@ public class C2SUseDuWangSkillPacket {
         NetworkEvent.Context context = contextSupplier.get();
         context.enqueueWork(() -> {
             if (context.getSender() != null) {
-                if (StandSummonLogic.findNearestOwnedStand(context.getSender(), BlueHawaiiEntity.class) != null) {
+                if (OzoneSkillLogic.hasOzoneHouse(context.getSender())) {
+                    OzoneSkillLogic.handleSkillUse(context.getSender(), packet.skillId);
+                } else if (StandSummonLogic.findNearestOwnedStand(context.getSender(), BlueHawaiiEntity.class) != null) {
                     BlueHawaiiSkillLogic.handleSkillUse(context.getSender(), packet.skillId);
                 } else {
                     DuWangSkillLogic.handleSkillUse(context.getSender(), packet.skillId);
