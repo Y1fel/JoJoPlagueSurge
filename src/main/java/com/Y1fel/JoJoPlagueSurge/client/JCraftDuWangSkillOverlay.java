@@ -1,8 +1,11 @@
 package com.Y1fel.JoJoPlagueSurge.client;
 
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.bluehawaii.BlueHawaiiEntity;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.duwang.DuWangEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandEntity;
 import com.Y1fel.JoJoPlagueSurge.network.packet.StandSummonLogic;
+import com.Y1fel.JoJoPlagueSurge.skill.BlueHawaiiSkillCatalog;
 import com.Y1fel.JoJoPlagueSurge.skill.DuWangSkillCatalog;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.arna.jcraft.client.JClientConfig;
@@ -15,18 +18,14 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-
-/**
- * 杜王技能 HUD（按 JCraftAbilityHud 的显隐与冷却来源逻辑对齐）。
- */
 @Mod.EventBusSubscriber(modid = ModEntrance.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class JCraftDuWangSkillOverlay {
-    private static final int SLOT_SIZE = 22;
     private static final int SPACING = 8;
     private static final ResourceLocation EMPTY_GAUGE = ResourceLocation.tryParse("jcraft:textures/gui/empty_gauge.png");
     private static final ResourceLocation FULL_GAUGE = ResourceLocation.tryParse("jcraft:textures/gui/full_gauge.png");
@@ -40,7 +39,7 @@ public final class JCraftDuWangSkillOverlay {
     }
 
     public static void markSkillTriggered(int skillId) {
-        // 改为由 JCraft cooldown component 驱动，保留兼容入口。
+        timeSinceNoCooldowns = 0;
     }
 
     @SubscribeEvent
@@ -51,10 +50,11 @@ public final class JCraftDuWangSkillOverlay {
         }
 
         LocalPlayer player = mc.player;
-        DuWangEntity stand = getOwnedStand(player);
+        StandEntity stand = getOwnedStand(player);
         if (stand == null) {
             return;
         }
+
         renderStandGauge(event.getGuiGraphics(), event.getWindow().getGuiScaledWidth(), event.getWindow().getGuiScaledHeight(), stand);
 
         timeSinceNoCooldowns++;
@@ -62,10 +62,11 @@ public final class JCraftDuWangSkillOverlay {
         double cd1Ratio = getCooldownRemainRatio(CooldownType.STAND_SP1);
         double cd2Ratio = getCooldownRemainRatio(CooldownType.STAND_SP2);
         boolean coolingDown = cd1Ratio > 0.0D || cd2Ratio > 0.0D;
+        boolean forceShow = stand instanceof BlueHawaiiEntity && player.hasEffect(MobEffects.GLOWING);
 
         final boolean peekAllMoves = JClientConfig.getInstance().isIconHudPeekAllMoves();
         float alpha = peekAllMoves ? 0.1F : 0.0F;
-        if (coolingDown) {
+        if (coolingDown || forceShow) {
             timeSinceNoCooldowns = 0;
             alpha = 1.0F;
         }
@@ -76,39 +77,66 @@ public final class JCraftDuWangSkillOverlay {
 
         GuiGraphics gui = event.getGuiGraphics();
         int baseX = JCraftAbilityHud.getHudX(event.getWindow().getGuiScaledWidth(), 32);
-        int y1 = SPACING * 14;
-        int y2 = SPACING * 17;
 
-        renderSkill(gui, baseX, y1, DuWangSkillCatalog.TRACKING_TORNADO_ID,
-                CooldownType.STAND_SP1, cd1Ratio, "special1", alpha);
-        renderSkill(gui, baseX, y2, DuWangSkillCatalog.HURRICANE_BARRIER_ID,
-                CooldownType.STAND_SP2, cd2Ratio, "special2", alpha);
+        if (stand instanceof BlueHawaiiEntity) {
+            renderBlueHawaiiSkills(gui, baseX, cd1Ratio, cd2Ratio, alpha);
+            return;
+        }
+
+        renderDuWangSkills(gui, baseX, cd1Ratio, cd2Ratio, alpha);
+    }
+
+    private static void renderDuWangSkills(GuiGraphics gui, int baseX, double cd1Ratio, double cd2Ratio, float alpha) {
+        renderSkill(gui, baseX, SPACING * 14,
+                DuWangSkillCatalog.getSkillIconPath(DuWangSkillCatalog.TRACKING_TORNADO_ID),
+                CooldownType.STAND_SP1, cd1Ratio, "special1",
+                ModKeyMappings.DUWANG_SKILL_1.getTranslatedKeyMessage().getString(), alpha);
+        renderSkill(gui, baseX, SPACING * 17,
+                DuWangSkillCatalog.getSkillIconPath(DuWangSkillCatalog.HURRICANE_BARRIER_ID),
+                CooldownType.STAND_SP2, cd2Ratio, "special2",
+                ModKeyMappings.DUWANG_SKILL_2.getTranslatedKeyMessage().getString(), alpha);
+    }
+
+    private static void renderBlueHawaiiSkills(GuiGraphics gui, int baseX, double cd1Ratio, double cd2Ratio, float alpha) {
+        renderSkill(gui, baseX, SPACING * 11,
+                BlueHawaiiSkillCatalog.getSkillIconPath(BlueHawaiiSkillCatalog.TOOTH_MARK_ID),
+                null, 0.0D, "tooth", "ITEM", alpha);
+        renderSkill(gui, baseX, SPACING * 14,
+                BlueHawaiiSkillCatalog.getSkillIconPath(BlueHawaiiSkillCatalog.HUNT_ACTIVATE_ID),
+                CooldownType.STAND_SP1, cd1Ratio, "hunt",
+                ModKeyMappings.DUWANG_SKILL_1.getTranslatedKeyMessage().getString(), alpha);
+        renderSkill(gui, baseX, SPACING * 17,
+                BlueHawaiiSkillCatalog.getSkillIconPath(BlueHawaiiSkillCatalog.HUNT_RELEASE_ID),
+                CooldownType.STAND_SP2, cd2Ratio, "release",
+                ModKeyMappings.DUWANG_SKILL_2.getTranslatedKeyMessage().getString(), alpha);
     }
 
     private static void renderSkill(
             GuiGraphics gui,
             int x,
             int y,
-            int skillId,
+            String iconPath,
             CooldownType cooldownType,
             double remainRatio,
             String fallback,
+            String keyText,
             float alpha
     ) {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
         JCraftAbilityHud.renderBorder(gui, x, y);
 
-        ResourceLocation icon = ResourceLocation.tryParse(DuWangSkillCatalog.getSkillIconPath(skillId));
+        ResourceLocation icon = ResourceLocation.tryParse(iconPath);
         if (icon != null) {
             JCraftAbilityHud.renderAbsIcon(gui, x, y, icon, fallback);
         }
 
-        int remainTicks = JComponentPlatformUtils.getCooldowns(Minecraft.getInstance().player).getCooldown(cooldownType);
-        if (remainTicks > 0 && remainRatio > 0.0D) {
+        int remainTicks = cooldownType == null
+                ? 0
+                : JComponentPlatformUtils.getCooldowns(Minecraft.getInstance().player).getCooldown(cooldownType);
+        if (cooldownType != null && remainTicks > 0 && remainRatio > 0.0D) {
             JCraftAbilityHud.renderCooldown(gui, remainRatio, x, y);
         }
 
-        String keyText = getSkillKeyText(cooldownType);
         gui.drawString(
                 Minecraft.getInstance().font,
                 keyText,
@@ -119,7 +147,11 @@ public final class JCraftDuWangSkillOverlay {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    private static DuWangEntity getOwnedStand(LocalPlayer player) {
+    private static StandEntity getOwnedStand(LocalPlayer player) {
+        BlueHawaiiEntity blueHawaii = StandSummonLogic.findNearestOwnedStand(player, BlueHawaiiEntity.class);
+        if (blueHawaii != null) {
+            return blueHawaii;
+        }
         return StandSummonLogic.findNearestOwnedStand(player, DuWangEntity.class);
     }
 
@@ -133,17 +165,7 @@ public final class JCraftDuWangSkillOverlay {
         return Mth.clamp(remain / (double) initial, 0.0D, 1.0D);
     }
 
-    private static String getSkillKeyText(CooldownType cooldownType) {
-        if (cooldownType == CooldownType.STAND_SP1) {
-            return ModKeyMappings.DUWANG_SKILL_1.getTranslatedKeyMessage().getString();
-        }
-        if (cooldownType == CooldownType.STAND_SP2) {
-            return ModKeyMappings.DUWANG_SKILL_2.getTranslatedKeyMessage().getString();
-        }
-        return "";
-    }
-
-    private static void renderStandGauge(GuiGraphics gui, int screenWidth, int screenHeight, DuWangEntity stand) {
+    private static void renderStandGauge(GuiGraphics gui, int screenWidth, int screenHeight, StandEntity stand) {
         if (EMPTY_GAUGE == null || FULL_GAUGE == null) {
             return;
         }

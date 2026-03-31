@@ -134,6 +134,17 @@ repositories {
             includeGroup "curse.maven"
         }
     }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
     // Put repositories for dependencies here
     // ForgeGradle automatically adds the Forge maven and Maven Central for you
 
@@ -155,6 +166,8 @@ dependencies {
     implementation("com.eliotlash.mclib:mclib:20")
 
     implementation fg.deobf("curse.maven:architectury-api-419699:5137938")
+    //implementation fg.deobf("curse.maven:more-potion-effects-1106489:7604143")
+
 
     implementation fg.deobf("curse.maven:trimmed-857036:4845938")
     implementation fg.deobf("curse.maven:jcraft-eyes-of-ender-854974:7290797")

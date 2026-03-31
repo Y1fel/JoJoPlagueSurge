@@ -7,9 +7,10 @@
   "item.jojoplaguesurge.duvillager_spawn_egg": "杜王町居民刷怪蛋",
   "item.jojoplaguesurge.duwang_spawn_egg": "杜比华刷怪蛋",
   "item.jojoplaguesurge.bloody_tooth": "带血的牙齿",
+  "item.jojoplaguesurge.stand_disc": "杜比华召唤光盘",
+  "item.jojoplaguesurge.bluehawaii_stand_disc": "蓝色夏威夷召唤光盘",
   "itemGroup.jojo_tab": "JoJo模组栏",
-  "key.categories.jojoplaguesurge": "JoJo灾厄狂潮",
-  "key.jojoplaguesurge.duwang_skill_1": "杜比华技能：替身突击",
-  "key.jojoplaguesurge.duwang_skill_2": "杜比华技能：飓风屏障",
-  "item.jojoplaguesurge.stand_disc": "替身光盘（占位）"
+  "key.categories.jojoplaguesurge": "JoJo Plague Surge",
+  "key.jojoplaguesurge.duwang_skill_1": "V键技能",
+  "key.jojoplaguesurge.duwang_skill_2": "B键技能"
 }

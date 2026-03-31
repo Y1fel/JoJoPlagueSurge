@@ -1,8 +1,11 @@
 package com.Y1fel.JoJoPlagueSurge.event;
 
+import com.Y1fel.JoJoPlagueSurge.network.packet.BlueHawaiiSkillLogic;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 //import net.minecraftforge.event.world.BiomeLoadingEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class ForgeEvents {
 
@@ -14,5 +17,16 @@ public class ForgeEvents {
     //            new MobSpawnSettings.SpawnerData(ModEntities.EXAMPLE_MOB.get(), 80, 1, 3)
     //    );
     //}
+
+    @SubscribeEvent
+    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide()) {
+            return;
+        }
+
+        if (event.player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+            BlueHawaiiSkillLogic.onServerPlayerTick(serverPlayer);
+        }
+    }
 
 }

@@ -30,7 +30,8 @@ public abstract class StandEntity extends Monster {
 
     private static final double FOLLOW_BACK_DISTANCE = 0.85D;
     private static final double FOLLOW_LEFT_DISTANCE = 0.65D;
-    private static final double FOLLOW_HEIGHT_OFFSET = 1.05D;
+    //private static final double FOLLOW_RIGHT_DISTANCE = 0.65D;
+    private static final double FOLLOW_HEIGHT_OFFSET = 0.80D;
 
     private int missingOwnerTicks;
     private int attackCooldownTicks;
@@ -43,7 +44,7 @@ public abstract class StandEntity extends Monster {
 
     public static AttributeSupplier.Builder createStandAttributes() {
         return Mob.createMobAttributes()
-                .add(Attributes.MAX_HEALTH, 20.0D)
+                .add(Attributes.MAX_HEALTH, 50.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.35D)
                 .add(Attributes.FOLLOW_RANGE, 48.0D)
                 .add(Attributes.ATTACK_DAMAGE, 6.0D)
@@ -151,7 +152,7 @@ public abstract class StandEntity extends Monster {
             flatForward = new Vec3(flatForward.x, 0.0D, flatForward.z);
         }
         flatForward = flatForward.normalize();
-        Vec3 left = new Vec3(-flatForward.z, 0.0D, flatForward.x);
+        Vec3 left = new Vec3(flatForward.z, 0.0D, -flatForward.x);
 
         Vec3 horizontalOffset = flatForward.scale(-FOLLOW_BACK_DISTANCE).add(left.scale(FOLLOW_LEFT_DISTANCE));
 

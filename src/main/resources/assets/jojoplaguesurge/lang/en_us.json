@@ -1,15 +1,16 @@
 {
-  "entity.jojoplaguesurge.bluehawaii": "BlueHawaii",
-  "entity.jojoplaguesurge.duvillager": "Morioh",
+  "entity.jojoplaguesurge.bluehawaii": "Blue Hawaii",
+  "entity.jojoplaguesurge.duvillager": "Morioh Villager",
   "entity.jojoplaguesurge.duwang": "Doobie Wah",
   "entity.jojoplaguesurge.tracking_tornado": "Tracking Tornado",
-  "item.jojoplaguesurge.bluehawaii_spawn_egg": "BlueHawaii Spawn Eggs",
-  "item.jojoplaguesurge.duvillager_spawn_egg": "Morioh Villager Spawn Eggs",
-  "item.jojoplaguesurge.duwang_spawn_egg": "Doobie Wah Spawn Eggs",
+  "item.jojoplaguesurge.bluehawaii_spawn_egg": "Blue Hawaii Spawn Egg",
+  "item.jojoplaguesurge.duvillager_spawn_egg": "Morioh Villager Spawn Egg",
+  "item.jojoplaguesurge.duwang_spawn_egg": "Doobie Wah Spawn Egg",
   "item.jojoplaguesurge.bloody_tooth": "Bloody Tooth",
+  "item.jojoplaguesurge.stand_disc": "Doobie Wah Summon Disc",
+  "item.jojoplaguesurge.bluehawaii_stand_disc": "Blue Hawaii Summon Disc",
   "itemGroup.jojo_tab": "JoJo Tab",
   "key.categories.jojoplaguesurge": "JoJo Plague Surge",
-  "key.jojoplaguesurge.duwang_skill_1": "DuWang Skill: Stand Assault",
-  "key.jojoplaguesurge.duwang_skill_2": "DuWang Skill: Hurricane Barrier",
-  "item.jojoplaguesurge.stand_disc": "Stand Disc (Placeholder)"
+  "key.jojoplaguesurge.duwang_skill_1": "V Skill",
+  "key.jojoplaguesurge.duwang_skill_2": "B Skill"
 }

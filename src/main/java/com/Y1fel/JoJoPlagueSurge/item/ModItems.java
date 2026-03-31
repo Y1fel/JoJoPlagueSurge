@@ -3,6 +3,7 @@ package com.Y1fel.JoJoPlagueSurge.item;
 
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
 import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
+import com.Y1fel.JoJoPlagueSurge.network.packet.StandSummonLogic;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -18,7 +19,11 @@ public class ModItems {
             ITEMS.register("bloody_tooth",() -> new Item(new Item.Properties().stacksTo(1)));
 
     public static final RegistryObject<Item> STAND_DISC =
-            ITEMS.register("stand_disc",() -> new StandDiscItem(new Item.Properties().stacksTo(1)));
+            ITEMS.register("stand_disc",() -> new StandDiscItem(new Item.Properties().stacksTo(1),
+                    StandSummonLogic::toggleDuWangStand));
+    public static final RegistryObject<Item> BLUEHAWAII_STAND_DISC =
+            ITEMS.register("bluehawaii_stand_disc",() -> new StandDiscItem(new Item.Properties().stacksTo(1),
+                    StandSummonLogic::toggleBlueHawaiiStand));
     public static final RegistryObject<ForgeSpawnEggItem> BLUEHAWAII_SPAWN_EGG =
             ITEMS.register("bluehawaii_spawn_egg", () -> new ForgeSpawnEggItem(
                     ModEntities.BLUEHAWAII,

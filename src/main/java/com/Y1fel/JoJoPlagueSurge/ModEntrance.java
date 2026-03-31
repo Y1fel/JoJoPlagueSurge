@@ -59,6 +59,7 @@ public class ModEntrance {
         if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(ModItems.BLOODY_TOOTH);
             event.accept(ModItems.STAND_DISC);
+            event.accept(ModItems.BLUEHAWAII_STAND_DISC);
         }
         if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS){
             event.accept(ModItems.BLUEHAWAII_SPAWN_EGG);

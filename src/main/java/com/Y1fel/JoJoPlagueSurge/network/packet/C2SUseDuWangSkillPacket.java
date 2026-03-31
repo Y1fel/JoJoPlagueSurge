@@ -1,5 +1,6 @@
 package com.Y1fel.JoJoPlagueSurge.network.packet;
 
+import com.Y1fel.JoJoPlagueSurge.entity.custom.bluehawaii.BlueHawaiiEntity;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -24,7 +25,11 @@ public class C2SUseDuWangSkillPacket {
         NetworkEvent.Context context = contextSupplier.get();
         context.enqueueWork(() -> {
             if (context.getSender() != null) {
-                DuWangSkillLogic.handleSkillUse(context.getSender(), packet.skillId);
+                if (StandSummonLogic.findNearestOwnedStand(context.getSender(), BlueHawaiiEntity.class) != null) {
+                    BlueHawaiiSkillLogic.handleSkillUse(context.getSender(), packet.skillId);
+                } else {
+                    DuWangSkillLogic.handleSkillUse(context.getSender(), packet.skillId);
+                }
             }
         });
         context.setPacketHandled(true);

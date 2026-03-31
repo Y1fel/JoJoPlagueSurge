@@ -23,11 +23,10 @@ public class StandSummonLogic {
         toggleStand(player, ModEntities.DUWANG.get());
     }
 
-    /**
-     * 对齐 JCraft summon/recall 主流程：
-     * 1) 若已有该玩家拥有的替身则回收
-     * 2) 否则在玩家背后生成并绑定 owner
-     */
+    public static void toggleBlueHawaiiStand(ServerPlayer player) {
+        toggleStand(player, ModEntities.BLUEHAWAII.get());
+    }
+
     public static <T extends StandEntity> void toggleStand(ServerPlayer player, EntityType<T> standType) {
         if (player.isSpectator()) {
             return;
@@ -36,7 +35,6 @@ public class StandSummonLogic {
         List<StandEntity> owned = findOwnedStands(player, StandEntity.class);
         if (!owned.isEmpty()) {
             owned.forEach(Entity::stopRiding);
-            player.displayClientMessage(Component.literal("替身收回"), true);
             return;
         }
 
@@ -50,8 +48,6 @@ public class StandSummonLogic {
         stand.moveTo(spawnPos.x, spawnPos.y, spawnPos.z, player.getYRot(), player.getXRot());
         stand.startRiding(player, true);
         player.serverLevel().addFreshEntity(stand);
-
-        player.displayClientMessage(Component.literal("替身显现"), true);
     }
 
     /**
