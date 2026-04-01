@@ -42,6 +42,7 @@ public class ModClientEvents {
         event.register(ModKeyMappings.DUWANG_SKILL_1);
         event.register(ModKeyMappings.DUWANG_SKILL_2);
         event.register(ModKeyMappings.DUWANG_SKILL_3);
+        event.register(ModKeyMappings.STAND_SUMMON_TOGGLE);
     }
 
 }

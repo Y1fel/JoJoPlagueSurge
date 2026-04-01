@@ -1,19 +1,19 @@
 package com.Y1fel.JoJoPlagueSurge.client;
 
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
+import com.Y1fel.JoJoPlagueSurge.client.ClientSkillCooldownState;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.bluehawaii.BlueHawaiiEntity;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.duwang.DuWangEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandManager;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandEntity;
 import com.Y1fel.JoJoPlagueSurge.network.packet.OzoneSkillLogic;
-import com.Y1fel.JoJoPlagueSurge.network.packet.StandSummonLogic;
+import com.Y1fel.JoJoPlagueSurge.network.packet.SkillCooldowns;
 import com.Y1fel.JoJoPlagueSurge.skill.BlueHawaiiSkillCatalog;
 import com.Y1fel.JoJoPlagueSurge.skill.DuWangSkillCatalog;
 import com.Y1fel.JoJoPlagueSurge.skill.OzoneSkillCatalog;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.arna.jcraft.client.gui.hud.JCraftAbilityHud;
 import net.arna.jcraft.common.util.ColorUtils;
-import net.arna.jcraft.common.util.CooldownType;
-import net.arna.jcraft.platform.JComponentPlatformUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
@@ -49,49 +49,47 @@ public final class JCraftDuWangSkillOverlay {
         }
 
         LocalPlayer player = mc.player;
-        if (OzoneSkillLogic.shouldRenderHud(player)) {
-            GuiGraphics gui = event.getGuiGraphics();
-            int baseX = JCraftAbilityHud.getHudX(event.getWindow().getGuiScaledWidth(), 32);
-            double cd1Ratio = getCooldownRemainRatio(CooldownType.STAND_SP1);
-            double cd2Ratio = getCooldownRemainRatio(CooldownType.STAND_SP2);
-            renderOzoneSkills(gui, baseX, cd1Ratio, cd2Ratio, 1.0F);
-            return;
-        }
-
         StandEntity stand = getOwnedStand(player);
-        if (stand == null) {
-            return;
-        }
-
-        renderStandGauge(event.getGuiGraphics(), event.getWindow().getGuiScaledWidth(), event.getWindow().getGuiScaledHeight(), stand);
-
-        double cd1Ratio = getCooldownRemainRatio(CooldownType.STAND_SP1);
-        double cd2Ratio = getCooldownRemainRatio(CooldownType.STAND_SP2);
-        float alpha = 1.0F;
-
         GuiGraphics gui = event.getGuiGraphics();
         int baseX = JCraftAbilityHud.getHudX(event.getWindow().getGuiScaledWidth(), 32);
+        float alpha = 1.0F;
 
-        if (stand instanceof BlueHawaiiEntity) {
-            renderBlueHawaiiSkills(gui, baseX, cd1Ratio, cd2Ratio, alpha);
+        if (stand != null) {
+            // Stand is invulnerable, so the separate health gauge stays disabled.
+            // renderStandGauge(event.getGuiGraphics(), event.getWindow().getGuiScaledWidth(), event.getWindow().getGuiScaledHeight(), stand);
+
+            if (stand instanceof BlueHawaiiEntity) {
+                renderBlueHawaiiSkills(gui, baseX,
+                        ClientSkillCooldownState.getRemainRatio(SkillCooldowns.BLUE_HAWAII_RELEASE), alpha);
+                return;
+            }
+
+            renderDuWangSkills(gui, baseX,
+                    ClientSkillCooldownState.getRemainRatio(SkillCooldowns.DUWANG_SKILL_1),
+                    ClientSkillCooldownState.getRemainRatio(SkillCooldowns.DUWANG_SKILL_2), alpha);
             return;
         }
 
-        renderDuWangSkills(gui, baseX, cd1Ratio, cd2Ratio, alpha);
+        if (OzoneSkillLogic.shouldRenderHud(player)) {
+            renderOzoneSkills(gui, baseX,
+                    ClientSkillCooldownState.getRemainRatio(SkillCooldowns.OZONE_SKILL_1),
+                    ClientSkillCooldownState.getRemainRatio(SkillCooldowns.OZONE_SKILL_2), alpha);
+            return;
+        }
     }
 
     private static void renderDuWangSkills(GuiGraphics gui, int baseX, double cd1Ratio, double cd2Ratio, float alpha) {
         renderSkill(gui, baseX, SPACING * 14,
                 DuWangSkillCatalog.getSkillIconPath(DuWangSkillCatalog.TRACKING_TORNADO_ID),
-                CooldownType.STAND_SP1, cd1Ratio, "special1",
+                SkillCooldowns.DUWANG_SKILL_1, cd1Ratio, "special1",
                 ModKeyMappings.DUWANG_SKILL_1.getTranslatedKeyMessage().getString(), alpha);
         renderSkill(gui, baseX, SPACING * 17,
                 DuWangSkillCatalog.getSkillIconPath(DuWangSkillCatalog.HURRICANE_BARRIER_ID),
-                CooldownType.STAND_SP2, cd2Ratio, "special2",
+                SkillCooldowns.DUWANG_SKILL_2, cd2Ratio, "special2",
                 ModKeyMappings.DUWANG_SKILL_2.getTranslatedKeyMessage().getString(), alpha);
     }
 
-    private static void renderBlueHawaiiSkills(GuiGraphics gui, int baseX, double cd1Ratio, double cd2Ratio, float alpha) {
+    private static void renderBlueHawaiiSkills(GuiGraphics gui, int baseX, double cd3Ratio, float alpha) {
         renderSkill(gui, baseX, SPACING * 11,
                 BlueHawaiiSkillCatalog.getSkillIconPath(BlueHawaiiSkillCatalog.TOOTH_MARK_ID),
                 null, 0.0D, "tooth",
@@ -102,18 +100,18 @@ public final class JCraftDuWangSkillOverlay {
                 ModKeyMappings.DUWANG_SKILL_2.getTranslatedKeyMessage().getString(), alpha);
         renderSkill(gui, baseX, SPACING * 17,
                 BlueHawaiiSkillCatalog.getSkillIconPath(BlueHawaiiSkillCatalog.HUNT_RELEASE_ID),
-                CooldownType.STAND_SP2, cd2Ratio, "release",
+                SkillCooldowns.BLUE_HAWAII_RELEASE, cd3Ratio, "release",
                 ModKeyMappings.DUWANG_SKILL_3.getTranslatedKeyMessage().getString(), alpha);
     }
 
     private static void renderOzoneSkills(GuiGraphics gui, int baseX, double cd1Ratio, double cd2Ratio, float alpha) {
         renderSkill(gui, baseX, SPACING * 14,
                 OzoneSkillCatalog.getSkillIconPath(OzoneSkillCatalog.MARK_TARGET_1_ID),
-                CooldownType.STAND_SP1, cd1Ratio, "ozone1",
+                SkillCooldowns.OZONE_SKILL_1, cd1Ratio, "ozone1",
                 ModKeyMappings.DUWANG_SKILL_1.getTranslatedKeyMessage().getString(), alpha);
         renderSkill(gui, baseX, SPACING * 17,
                 OzoneSkillCatalog.getSkillIconPath(OzoneSkillCatalog.MARK_TARGET_2_ID),
-                CooldownType.STAND_SP2, cd2Ratio, "ozone2",
+                SkillCooldowns.OZONE_SKILL_2, cd2Ratio, "ozone2",
                 ModKeyMappings.DUWANG_SKILL_2.getTranslatedKeyMessage().getString(), alpha);
     }
 
@@ -122,7 +120,7 @@ public final class JCraftDuWangSkillOverlay {
             int x,
             int y,
             @Nullable String iconPath,
-            @Nullable CooldownType cooldownType,
+            @Nullable String cooldownId,
             double remainRatio,
             String fallback,
             String keyText,
@@ -138,10 +136,10 @@ public final class JCraftDuWangSkillOverlay {
             }
         }
 
-        int remainTicks = cooldownType == null
+        int remainTicks = cooldownId == null
                 ? 0
-                : JComponentPlatformUtils.getCooldowns(Minecraft.getInstance().player).getCooldown(cooldownType);
-        if (cooldownType != null && remainTicks > 0 && remainRatio > 0.0D) {
+                : ClientSkillCooldownState.getRemainingTicks(cooldownId);
+        if (cooldownId != null && remainTicks > 0 && remainRatio > 0.0D) {
             JCraftAbilityHud.renderCooldown(gui, remainRatio, x, y);
         }
 
@@ -156,21 +154,11 @@ public final class JCraftDuWangSkillOverlay {
     }
 
     private static StandEntity getOwnedStand(LocalPlayer player) {
-        BlueHawaiiEntity blueHawaii = StandSummonLogic.findNearestOwnedStand(player, BlueHawaiiEntity.class);
+        BlueHawaiiEntity blueHawaii = StandManager.findNearestOwnedStand(player, BlueHawaiiEntity.class);
         if (blueHawaii != null) {
             return blueHawaii;
         }
-        return StandSummonLogic.findNearestOwnedStand(player, DuWangEntity.class);
-    }
-
-    private static double getCooldownRemainRatio(CooldownType cooldownType) {
-        var cooldowns = JComponentPlatformUtils.getCooldowns(Minecraft.getInstance().player);
-        int remain = cooldowns.getCooldown(cooldownType);
-        int initial = cooldowns.getInitialDuration(cooldownType);
-        if (remain <= 0 || initial <= 0) {
-            return 0.0D;
-        }
-        return Mth.clamp(remain / (double) initial, 0.0D, 1.0D);
+        return StandManager.findNearestOwnedStand(player, DuWangEntity.class);
     }
 
     private static void renderStandGauge(GuiGraphics gui, int screenWidth, int screenHeight, StandEntity stand) {

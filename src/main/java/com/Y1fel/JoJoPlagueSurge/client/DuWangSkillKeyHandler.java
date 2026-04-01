@@ -2,6 +2,7 @@ package com.Y1fel.JoJoPlagueSurge.client;
 
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
 import com.Y1fel.JoJoPlagueSurge.network.ModNetwork;
+import com.Y1fel.JoJoPlagueSurge.network.packet.C2SToggleOwnedStandPacket;
 import com.Y1fel.JoJoPlagueSurge.network.packet.C2SUseDuWangSkillPacket;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
@@ -26,6 +27,10 @@ public class DuWangSkillKeyHandler {
         while (ModKeyMappings.DUWANG_SKILL_3.consumeClick()) {
             ModNetwork.CHANNEL.sendToServer(new C2SUseDuWangSkillPacket(3));
             JCraftDuWangSkillOverlay.markSkillTriggered(3);
+        }
+
+        while (ModKeyMappings.STAND_SUMMON_TOGGLE.consumeClick()) {
+            ModNetwork.CHANNEL.sendToServer(new C2SToggleOwnedStandPacket());
         }
 
     }

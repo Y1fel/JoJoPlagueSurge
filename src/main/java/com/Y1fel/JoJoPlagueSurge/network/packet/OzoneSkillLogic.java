@@ -2,8 +2,6 @@ package com.Y1fel.JoJoPlagueSurge.network.packet;
 
 import com.Y1fel.JoJoPlagueSurge.block.ModBlocks;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandEntity;
-import net.arna.jcraft.common.util.CooldownType;
-import net.arna.jcraft.platform.JComponentPlatformUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -91,8 +89,8 @@ public final class OzoneSkillLogic {
     }
 
     public static void onServerPlayerTick(ServerPlayer player) {
-        updateTimedSkill(player, SKILL_1_ACTIVE_UNTIL, SKILL_1_TARGETS, TAG_SKILL_1, CooldownType.STAND_SP1, SKILL_1_COOLDOWN_TICKS);
-        updateTimedSkill(player, SKILL_2_ACTIVE_UNTIL, SKILL_2_TARGETS, TAG_SKILL_2, CooldownType.STAND_SP2, SKILL_2_COOLDOWN_TICKS);
+        updateTimedSkill(player, SKILL_1_ACTIVE_UNTIL, SKILL_1_TARGETS, TAG_SKILL_1, SkillCooldowns.OZONE_SKILL_1, SKILL_1_COOLDOWN_TICKS);
+        updateTimedSkill(player, SKILL_2_ACTIVE_UNTIL, SKILL_2_TARGETS, TAG_SKILL_2, SkillCooldowns.OZONE_SKILL_2, SKILL_2_COOLDOWN_TICKS);
         updateActiveHouseZone(player);
     }
 
@@ -160,7 +158,7 @@ public final class OzoneSkillLogic {
             return;
         }
 
-        int cooldown = JComponentPlatformUtils.getCooldowns(player).getCooldown(CooldownType.STAND_SP1);
+        int cooldown = SkillCooldowns.getRemainingTicks(player, SkillCooldowns.OZONE_SKILL_1);
         if (cooldown > 0) {
             long remainSeconds = (cooldown + 19L) / 20L;
             player.displayClientMessage(Component.literal("OZONE 技能1冷却中，还需 " + remainSeconds + " 秒"), true);
@@ -184,7 +182,7 @@ public final class OzoneSkillLogic {
             return;
         }
 
-        int cooldown = JComponentPlatformUtils.getCooldowns(player).getCooldown(CooldownType.STAND_SP2);
+        int cooldown = SkillCooldowns.getRemainingTicks(player, SkillCooldowns.OZONE_SKILL_2);
         if (cooldown > 0) {
             long remainSeconds = (cooldown + 19L) / 20L;
             player.displayClientMessage(Component.literal("OZONE 技能2冷却中，还需 " + remainSeconds + " 秒"), true);
@@ -232,7 +230,7 @@ public final class OzoneSkillLogic {
             String activeUntilKey,
             Map<UUID, Set<UUID>> targetStore,
             String tagName,
-            CooldownType cooldownType,
+            String cooldownId,
             int cooldownTicks
     ) {
         if (!player.getPersistentData().contains(activeUntilKey)) {
@@ -246,7 +244,7 @@ public final class OzoneSkillLogic {
 
         clearEntityTags(player.server, targetStore.remove(player.getUUID()), tagName);
         player.getPersistentData().remove(activeUntilKey);
-        JComponentPlatformUtils.getCooldowns(player).setCooldown(cooldownType, cooldownTicks);
+        SkillCooldowns.startCooldown(player, cooldownId, cooldownTicks);
     }
 
     private static void updateActiveHouseZone(ServerPlayer player) {

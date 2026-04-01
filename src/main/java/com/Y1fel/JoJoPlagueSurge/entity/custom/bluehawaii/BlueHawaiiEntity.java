@@ -1,6 +1,7 @@
 package com.Y1fel.JoJoPlagueSurge.entity.custom.bluehawaii;
 
 import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.level.Level;
@@ -21,6 +22,11 @@ public class BlueHawaiiEntity extends StandEntity implements GeoEntity {
 
     public static AttributeSupplier.Builder createAttributes() {
         return StandEntity.createStandAttributes();
+    }
+
+    @Override
+    public StandType getStandType() {
+        return StandType.BLUE_HAWAII;
     }
 
     @Override

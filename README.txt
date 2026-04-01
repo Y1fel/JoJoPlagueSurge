@@ -82,4 +82,4 @@ Run Notes:
   run/config/
 
 License:
-All Rights Reserved
+MIT

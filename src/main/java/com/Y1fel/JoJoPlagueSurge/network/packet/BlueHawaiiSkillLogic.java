@@ -3,10 +3,9 @@ package com.Y1fel.JoJoPlagueSurge.network.packet;
 import com.Y1fel.JoJoPlagueSurge.Config;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.bluehawaii.BlueHawaiiEntity;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.duvillager.DuVillagerEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandManager;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandEntity;
 import com.Y1fel.JoJoPlagueSurge.item.ModItems;
-import net.arna.jcraft.common.util.CooldownType;
-import net.arna.jcraft.platform.JComponentPlatformUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.CompoundTag;
@@ -129,7 +128,7 @@ public final class BlueHawaiiSkillLogic {
             return;
         }
 
-        int cooldown = JComponentPlatformUtils.getCooldowns(player).getCooldown(CooldownType.STAND_SP2);
+        int cooldown = SkillCooldowns.getRemainingTicks(player, SkillCooldowns.BLUE_HAWAII_RELEASE);
         if (cooldown > 0) {
             long remainSeconds = (cooldown + 19L) / 20L;
             player.displayClientMessage(Component.literal("蓝色夏威夷能力冷却中，还需 " + remainSeconds + " 秒"), true);
@@ -202,7 +201,7 @@ public final class BlueHawaiiSkillLogic {
         }
 
         if (startCooldown) {
-            JComponentPlatformUtils.getCooldowns(player).setCooldown(CooldownType.STAND_SP2, RELEASE_COOLDOWN_TICKS);
+            SkillCooldowns.startCooldown(player, SkillCooldowns.BLUE_HAWAII_RELEASE, RELEASE_COOLDOWN_TICKS);
             tag.putLong(TOOTH_RESTORE_AT, player.level().getGameTime() + RELEASE_COOLDOWN_TICKS);
             player.displayClientMessage(Component.literal("蓝色夏威夷能力已解除"), true);
         }
@@ -282,7 +281,7 @@ public final class BlueHawaiiSkillLogic {
     }
 
     private static boolean hasBlueHawaiiStand(ServerPlayer player) {
-        return StandSummonLogic.findNearestOwnedStand(player, BlueHawaiiEntity.class) != null;
+        return StandManager.findNearestOwnedStand(player, BlueHawaiiEntity.class) != null;
     }
 
     @Nullable

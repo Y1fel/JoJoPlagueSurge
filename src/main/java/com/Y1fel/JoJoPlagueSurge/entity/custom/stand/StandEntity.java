@@ -20,17 +20,12 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * 基础替身实体：负责绑定主人、跟随和基础生命周期。
- * 目标是让所有替身（DuWang / BlueHawaii）共享同一套核心行为，统一“替身附身”体验。
- */
 public abstract class StandEntity extends Monster {
     private static final EntityDataAccessor<Optional<UUID>> OWNER_UUID =
             SynchedEntityData.defineId(StandEntity.class, EntityDataSerializers.OPTIONAL_UUID);
 
     private static final double FOLLOW_BACK_DISTANCE = 0.85D;
     private static final double FOLLOW_LEFT_DISTANCE = 0.65D;
-    //private static final double FOLLOW_RIGHT_DISTANCE = 0.65D;
     private static final double FOLLOW_HEIGHT_OFFSET = 0.80D;
 
     private int missingOwnerTicks;
@@ -75,6 +70,8 @@ public abstract class StandEntity extends Monster {
     public boolean isOwnedBy(Player player) {
         return this.entityData.get(OWNER_UUID).map(uuid -> uuid.equals(player.getUUID())).orElse(false);
     }
+
+    public abstract StandType getStandType();
 
     @Override
     public void tick() {
@@ -132,12 +129,10 @@ public abstract class StandEntity extends Monster {
     }
 
     protected void followOwner(Player owner) {
-        // 对齐 JCraft：保持 rider 关系，位置由 EntityMixin 注入 positionRider 来修正。
         if (this.getVehicle() != owner) {
             this.startRiding(owner, true);
         }
         this.setDeltaMovement(Vec3.ZERO);
-
         this.setYRot(owner.getYRot());
         this.setXRot(owner.getXRot());
         this.setYHeadRot(owner.getYHeadRot());
@@ -155,19 +150,23 @@ public abstract class StandEntity extends Monster {
         Vec3 left = new Vec3(flatForward.z, 0.0D, -flatForward.x);
 
         Vec3 horizontalOffset = flatForward.scale(-FOLLOW_BACK_DISTANCE).add(left.scale(FOLLOW_LEFT_DISTANCE));
-
-        // 对齐 JCraft EntityMixinLogic：passenger.getMyRidingOffset() + heightOffset。
         double heightOffset = Vec3.directionFromRotation(owner.getXRot(), owner.getYRot()).y;
         double yOffset = this.getMyRidingOffset() + FOLLOW_HEIGHT_OFFSET + heightOffset;
         return owner.position().add(horizontalOffset.x, yOffset, horizontalOffset.z);
     }
 
+    public Vec3 calculateFollowPos(Player owner) {
+        return calculateBackStandPos(owner);
+    }
+
+    @Override
+    public boolean isAttackable() {
+        return false;
+    }
+
     @Override
     public boolean hurt(net.minecraft.world.damagesource.DamageSource source, float amount) {
-        if (source.getEntity() instanceof Player player && isOwnedBy(player)) {
-            return false;
-        }
-        return super.hurt(source, amount);
+        return false;
     }
 
     @Override
@@ -176,6 +175,12 @@ public abstract class StandEntity extends Monster {
             return;
         }
         super.stopRiding();
+        if (!this.level().isClientSide) {
+            this.discard();
+        }
+    }
+
+    public void dismiss() {
         if (!this.level().isClientSide) {
             this.discard();
         }

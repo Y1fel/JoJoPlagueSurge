@@ -1,6 +1,8 @@
 package com.Y1fel.JoJoPlagueSurge.network.packet;
 
 import com.Y1fel.JoJoPlagueSurge.entity.custom.bluehawaii.BlueHawaiiEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.duwang.DuWangEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandManager;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -25,12 +27,12 @@ public class C2SUseDuWangSkillPacket {
         NetworkEvent.Context context = contextSupplier.get();
         context.enqueueWork(() -> {
             if (context.getSender() != null) {
-                if (OzoneSkillLogic.hasOzoneHouse(context.getSender())) {
-                    OzoneSkillLogic.handleSkillUse(context.getSender(), packet.skillId);
-                } else if (StandSummonLogic.findNearestOwnedStand(context.getSender(), BlueHawaiiEntity.class) != null) {
+                if (StandManager.findNearestOwnedStand(context.getSender(), BlueHawaiiEntity.class) != null) {
                     BlueHawaiiSkillLogic.handleSkillUse(context.getSender(), packet.skillId);
-                } else {
+                } else if (StandManager.findNearestOwnedStand(context.getSender(), DuWangEntity.class) != null) {
                     DuWangSkillLogic.handleSkillUse(context.getSender(), packet.skillId);
+                } else if (OzoneSkillLogic.hasOzoneHouse(context.getSender())) {
+                    OzoneSkillLogic.handleSkillUse(context.getSender(), packet.skillId);
                 }
             }
         });

@@ -2,6 +2,7 @@ package com.Y1fel.JoJoPlagueSurge.event;
 
 import com.Y1fel.JoJoPlagueSurge.network.packet.BlueHawaiiSkillLogic;
 import com.Y1fel.JoJoPlagueSurge.network.packet.OzoneSkillLogic;
+import com.Y1fel.JoJoPlagueSurge.network.packet.SkillCooldowns;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 //import net.minecraftforge.event.world.BiomeLoadingEvent;
@@ -28,6 +29,7 @@ public class ForgeEvents {
         if (event.player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
             BlueHawaiiSkillLogic.onServerPlayerTick(serverPlayer);
             OzoneSkillLogic.onServerPlayerTick(serverPlayer);
+            SkillCooldowns.sync(serverPlayer);
         }
     }
 

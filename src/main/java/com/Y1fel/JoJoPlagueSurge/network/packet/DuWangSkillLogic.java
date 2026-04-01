@@ -3,13 +3,12 @@ package com.Y1fel.JoJoPlagueSurge.network.packet;
 import com.Y1fel.JoJoPlagueSurge.Config;
 import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.duwang.DuWangEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandManager;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandEntity;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.trackingtornado.TrackingTornadoEntity;
 import com.Y1fel.JoJoPlagueSurge.skill.DuWangSkillCatalog;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.arna.jcraft.common.util.CooldownType;
-import net.arna.jcraft.platform.JComponentPlatformUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
@@ -52,7 +51,7 @@ public class DuWangSkillLogic {
     }
 
     private static void useTrackingHurricane(ServerPlayer player) {
-        int cooldown = JComponentPlatformUtils.getCooldowns(player).getCooldown(CooldownType.STAND_SP1);
+        int cooldown = SkillCooldowns.getRemainingTicks(player, SkillCooldowns.DUWANG_SKILL_1);
         if (cooldown > 0) {
             long remainSeconds = (cooldown + 19L) / 20L;
             player.displayClientMessage(Component.literal("追踪飓风冷却中，还需 " + remainSeconds + " 秒"), true);
@@ -68,7 +67,7 @@ public class DuWangSkillLogic {
         }
 
         player.getPersistentData().putLong(SKILL_1_LAST_USE, player.level().getGameTime());
-        JComponentPlatformUtils.getCooldowns(player).setCooldown(CooldownType.STAND_SP1, SKILL_1_COOLDOWN_TICKS);
+        SkillCooldowns.startCooldown(player, SkillCooldowns.DUWANG_SKILL_1, SKILL_1_COOLDOWN_TICKS);
         broadcastToOpTeam(player, "追踪飓风");
 
         ServerLevel level = player.serverLevel();
@@ -97,7 +96,7 @@ public class DuWangSkillLogic {
     }
 
     private static void useHurricaneBarrier(ServerPlayer player) {
-        int cooldown = JComponentPlatformUtils.getCooldowns(player).getCooldown(CooldownType.STAND_SP2);
+        int cooldown = SkillCooldowns.getRemainingTicks(player, SkillCooldowns.DUWANG_SKILL_2);
         if (cooldown > 0) {
             long remainSeconds = (cooldown + 19L) / 20L;
             player.displayClientMessage(Component.literal("飓风屏障冷却中，还需 " + remainSeconds + " 秒"), true);
@@ -105,7 +104,7 @@ public class DuWangSkillLogic {
         }
 
         player.getPersistentData().putLong(SKILL_2_LAST_USE, player.level().getGameTime());
-        JComponentPlatformUtils.getCooldowns(player).setCooldown(CooldownType.STAND_SP2, SKILL_2_COOLDOWN_TICKS);
+        SkillCooldowns.startCooldown(player, SkillCooldowns.DUWANG_SKILL_2, SKILL_2_COOLDOWN_TICKS);
 
         player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 20 * 10, 1));
         player.addEffect(new MobEffectInstance(MobEffects.HEALTH_BOOST, 20 * 10, 0));
@@ -161,6 +160,6 @@ public class DuWangSkillLogic {
     }
 
     private static DuWangEntity findOwnedStand(ServerPlayer player) {
-        return StandSummonLogic.findNearestOwnedStand(player, DuWangEntity.class);
+        return StandManager.findNearestOwnedStand(player, DuWangEntity.class);
     }
 }

@@ -33,6 +33,14 @@ public class ModKeyMappings {
             CATEGORY
     );
 
+    public static final KeyMapping STAND_SUMMON_TOGGLE = new KeyMapping(
+            "key." + ModEntrance.MODID + ".stand_toggle",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_N,
+            CATEGORY
+    );
+
 
     private ModKeyMappings() {
     }
