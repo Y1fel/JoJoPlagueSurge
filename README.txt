@@ -7,7 +7,7 @@ Minecraft Forge 1.20.1 mod
 Basic Info:
 - Mod ID: jojoplaguesurge
 - Mod Name: JoJoPlagueSurge
-- Version: 1.0.0
+- Version: 1.0.1
 - Author: Y1fel
 - Java: 17
 - Forge: 47.4.10

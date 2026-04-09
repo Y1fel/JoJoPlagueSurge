@@ -18,6 +18,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkHooks;
+import org.jetbrains.annotations.NotNull;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
@@ -111,7 +112,7 @@ public class TrackingTornadoEntity extends Entity implements GeoEntity{
     }
 
     private void onHitTarget(LivingEntity target) {
-        target.hurt(this.damageSources().magic(), 6.0F);
+        target.hurt(this.damageSources().magic(), 2.0F);
         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 2));
         this.discard();
     }
@@ -135,7 +136,7 @@ public class TrackingTornadoEntity extends Entity implements GeoEntity{
     }
 
     @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket() {
+    public @NotNull Packet<ClientGamePacketListener> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 

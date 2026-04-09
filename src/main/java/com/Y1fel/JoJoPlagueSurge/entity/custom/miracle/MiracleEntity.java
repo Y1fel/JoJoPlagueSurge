@@ -17,9 +17,14 @@ import net.minecraft.world.level.Level;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 public class MiracleEntity extends Monster implements GeoEntity {
+    private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.wonder.stop");
+    private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.wonder.move");
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     public MiracleEntity(EntityType<? extends Monster> entityType, Level level) {
@@ -49,7 +54,10 @@ public class MiracleEntity extends Monster implements GeoEntity {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        // Miracle uses a static geo pose for now, so no animation controllers are registered.
+        controllers.add(new AnimationController<>(this, "movement", 4, state -> {
+            state.setAnimation(state.isMoving() ? WALK : IDLE);
+            return PlayState.CONTINUE;
+        }));
     }
 
     @Override

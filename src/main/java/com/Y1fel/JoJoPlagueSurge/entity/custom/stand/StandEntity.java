@@ -99,8 +99,12 @@ public abstract class StandEntity extends Monster {
     }
 
     protected void syncTargetFromOwner(Player owner) {
-        if (owner.getLastHurtMob() != null && owner.getLastHurtMob().isAlive() && owner.getLastHurtMob() != owner) {
-            this.setTarget(owner.getLastHurtMob());
+        LivingEntity lastHurtMob = owner.getLastHurtMob();
+        if (lastHurtMob != null
+                && lastHurtMob.isAlive()
+                && lastHurtMob != owner
+                && !(lastHurtMob instanceof Player)) {
+            this.setTarget(lastHurtMob);
         }
     }
 
@@ -110,7 +114,10 @@ public abstract class StandEntity extends Monster {
         }
 
         LivingEntity target = this.getTarget();
-        if (target == null || !target.isAlive() || target == owner) {
+        if (target == null || !target.isAlive() || target == owner || target instanceof Player) {
+            if (target instanceof Player) {
+                this.setTarget(null);
+            }
             return;
         }
 
@@ -162,6 +169,20 @@ public abstract class StandEntity extends Monster {
     @Override
     public boolean isAttackable() {
         return false;
+    }
+
+    @Override
+    public boolean isPushable() {
+        return false;
+    }
+
+    @Override
+    public boolean canCollideWith(Entity entity) {
+        return false;
+    }
+
+    @Override
+    public void push(Entity entity) {
     }
 
     @Override
