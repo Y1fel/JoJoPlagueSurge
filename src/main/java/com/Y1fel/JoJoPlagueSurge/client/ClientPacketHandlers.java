@@ -13,5 +13,6 @@ public final class ClientPacketHandlers {
         ClientSkillCooldownState.update(SkillCooldowns.BLUE_HAWAII_RELEASE, packet.getBlueHawaiiReleaseRemaining(), packet.getBlueHawaiiReleaseInitial());
         ClientSkillCooldownState.update(SkillCooldowns.OZONE_SKILL_1, packet.getOzoneSkill1Remaining(), packet.getOzoneSkill1Initial());
         ClientSkillCooldownState.update(SkillCooldowns.OZONE_SKILL_2, packet.getOzoneSkill2Remaining(), packet.getOzoneSkill2Initial());
+        ClientOzoneSkillState.update(packet.isOzoneSkill1Active(), packet.isOzoneSkill2Active(), packet.isOzoneSkill3Active());
     }
 }

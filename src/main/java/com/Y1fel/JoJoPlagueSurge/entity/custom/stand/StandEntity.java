@@ -11,7 +11,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -20,7 +19,7 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.UUID;
 
-public abstract class StandEntity extends Monster {
+public abstract class StandEntity extends Mob {
     private static final EntityDataAccessor<Optional<UUID>> OWNER_UUID =
             SynchedEntityData.defineId(StandEntity.class, EntityDataSerializers.OPTIONAL_UUID);
 
@@ -31,7 +30,7 @@ public abstract class StandEntity extends Monster {
     private int missingOwnerTicks;
     private int attackCooldownTicks;
 
-    protected StandEntity(EntityType<? extends Monster> entityType, Level level) {
+    protected StandEntity(EntityType<? extends Mob> entityType, Level level) {
         super(entityType, level);
         this.noPhysics = true;
         this.setNoAi(true);
@@ -179,6 +178,28 @@ public abstract class StandEntity extends Monster {
     @Override
     public boolean canCollideWith(Entity entity) {
         return false;
+    }
+
+    @Override
+    public boolean canBeCollidedWith() {
+        return false;
+    }
+
+    @Override
+    public boolean isPickable() {
+        return false;
+    }
+
+    @Override
+    public void playerTouch(Player player) {
+    }
+
+    @Override
+    public boolean doHurtTarget(Entity entity) {
+        if (entity instanceof Player) {
+            return false;
+        }
+        return super.doHurtTarget(entity);
     }
 
     @Override

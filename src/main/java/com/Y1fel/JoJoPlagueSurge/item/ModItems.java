@@ -38,6 +38,13 @@ public class ModItems {
                     0xD6C3A5,
                     new Item.Properties()
             ));
+    public static final RegistryObject<ForgeSpawnEggItem> CRIMINAL_DUVILLAGER_SPAWN_EGG =
+            ITEMS.register("criminal_duvillager_spawn_egg", () -> new ForgeSpawnEggItem(
+                    ModEntities.CRIMINAL_DUVILLAGER,
+                    0x201914,
+                    0xA32C24,
+                    new Item.Properties()
+            ));
     public static final RegistryObject<ForgeSpawnEggItem> DUWANG_SPAWN_EGG =
             ITEMS.register("duwang_spawn_egg", () -> new ForgeSpawnEggItem(
                     ModEntities.DUWANG,

@@ -14,6 +14,8 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import org.jetbrains.annotations.NotNull;
 
 public class DuVillagerEntity extends BaseDuVillager {
+    public static final int NORMAL_VARIANT_COUNT = 10;
+
     private static final EntityDataAccessor<Integer> VARIANT =
             SynchedEntityData.defineId(DuVillagerEntity.class, EntityDataSerializers.INT);
     public DuVillagerEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
@@ -53,7 +55,7 @@ public class DuVillagerEntity extends BaseDuVillager {
         SpawnGroupData data = super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData, tag);
 
         if (!this.hasVariantAssigned()) {
-            this.setVariant(this.random.nextInt(10) + 1);
+            this.setVariant(this.random.nextInt(NORMAL_VARIANT_COUNT) + 1);
         }
 
         return data;
@@ -61,6 +63,6 @@ public class DuVillagerEntity extends BaseDuVillager {
 
     private boolean hasVariantAssigned() {
         int v = this.getVariant();
-        return v >= 1 && v <= 10;
+        return v >= 1 && v <= NORMAL_VARIANT_COUNT;
     }
 }

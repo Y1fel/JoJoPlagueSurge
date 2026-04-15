@@ -2,6 +2,7 @@ package com.Y1fel.JoJoPlagueSurge.network.packet;
 
 import com.Y1fel.JoJoPlagueSurge.block.ModBlocks;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandEntity;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -18,9 +19,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,17 +38,34 @@ public final class OzoneSkillLogic {
 
     private static final String SKILL_1_ACTIVE_UNTIL = "jojoplaguesurge.ozone.skill_1_active_until";
     private static final String SKILL_2_ACTIVE_UNTIL = "jojoplaguesurge.ozone.skill_2_active_until";
+    private static final String SKILL_1_INJURY_OUTBURST_APPLIED = "jojoplaguesurge.ozone.skill_1_injury_outburst_applied";
+    private static final String SKILL_1_BLEEDING_APPLIED = "jojoplaguesurge.ozone.skill_1_bleeding_applied";
     private static final String HOUSE_RECALL_COOLDOWN_UNTIL = "jojoplaguesurge.ozone.house_recall_cooldown_until";
 
     private static final int SKILL_1_DURATION_TICKS = 20 * 60;
     private static final int SKILL_1_COOLDOWN_TICKS = 20 * 60;
     private static final int SKILL_2_DURATION_TICKS = 20 * 2;
     private static final int SKILL_2_COOLDOWN_TICKS = 20 * 30;
+    private static final int SKILL_EFFECT_REFRESH_TICKS = 40;
+    private static final int SKILL_1_INJURY_OUTBURST_START_TICKS = 20 * 10;
+    private static final int SKILL_1_INJURY_OUTBURST_DURATION_TICKS = 20 * 50;
+    private static final int SKILL_1_BLEEDING_START_TICKS = 20 * 45;
+    private static final int SKILL_1_HEAVY_DURATION_TICKS = SKILL_1_DURATION_TICKS;
+    private static final int SKILL_1_BLEEDING_DURATION_TICKS = SKILL_1_DURATION_TICKS - SKILL_1_BLEEDING_START_TICKS;
     private static final int HOUSE_RECALL_COOLDOWN_TICKS = 20 * 60 * 60 * 2;
     private static final int IMPRISON_DURATION_TICKS = 20 * 2;
+    private static final int HOUSE_EFFECT_REFRESH_TICKS = 40;
+    private static final int HOUSE_HEAVY_1_START_TICKS = 0;
+    private static final int HOUSE_HEAVY_2_START_TICKS = 20 * 10;
+    private static final int HOUSE_INJURY_OUTBURST_START_TICKS = 20 * 15;
+    private static final int HOUSE_INJURY_OUTBURST_DURATION_TICKS = 20 * 30;
+    private static final int HOUSE_BLEEDING_START_TICKS = 20 * 25;
+    private static final int HOUSE_IMPRISON_START_TICKS = 20 * 150;
 
     private static final double SKILL_PLAYER_RADIUS = 16.0D;
     private static final double HOUSE_RADIUS = 32.0D;
+    private static final double HOUSE_SEARCH_RADIUS_XZ = 40.0D;
+    private static final double HOUSE_SEARCH_RADIUS_Y = 40.0D;
 
     private static final Map<UUID, Set<UUID>> SKILL_1_TARGETS = new HashMap<>();
     private static final Map<UUID, Set<UUID>> SKILL_2_TARGETS = new HashMap<>();
@@ -75,6 +95,18 @@ public final class OzoneSkillLogic {
         return hasOzoneHouse(player);
     }
 
+    public static boolean isSkill1Active(Player player) {
+        return player.getPersistentData().contains(SKILL_1_ACTIVE_UNTIL);
+    }
+
+    public static boolean isSkill2Active(Player player) {
+        return player.getPersistentData().contains(SKILL_2_ACTIVE_UNTIL);
+    }
+
+    public static boolean isSkill3Active(Player player) {
+        return ACTIVE_HOUSES.containsKey(player.getUUID());
+    }
+
     public static void handleSkillUse(ServerPlayer player, int skillId) {
         if (!hasOzoneHouse(player)) {
             player.displayClientMessage(Component.literal("背包里没有 OZONE"), true);
@@ -89,9 +121,11 @@ public final class OzoneSkillLogic {
     }
 
     public static void onServerPlayerTick(ServerPlayer player) {
+        updateSkill1Effects(player);
         updateTimedSkill(player, SKILL_1_ACTIVE_UNTIL, SKILL_1_TARGETS, TAG_SKILL_1, SkillCooldowns.OZONE_SKILL_1, SKILL_1_COOLDOWN_TICKS);
         updateTimedSkill(player, SKILL_2_ACTIVE_UNTIL, SKILL_2_TARGETS, TAG_SKILL_2, SkillCooldowns.OZONE_SKILL_2, SKILL_2_COOLDOWN_TICKS);
         updateActiveHouseZone(player);
+        updateActiveSkillHint(player);
     }
 
     public static void onHousePlaced(Level level, BlockPos pos, @Nullable Entity placer) {
@@ -127,7 +161,10 @@ public final class OzoneSkillLogic {
             return InteractionResult.SUCCESS;
         }
 
-        ActiveHouseZone previous = ACTIVE_HOUSES.put(player.getUUID(), new ActiveHouseZone(pos.immutable(), new HashSet<>()));
+        ActiveHouseZone previous = ACTIVE_HOUSES.put(
+                player.getUUID(),
+                new ActiveHouseZone(pos.immutable(), new HashSet<>(), player.level().getGameTime())
+        );
         if (previous != null) {
             clearEntityTags(player.server, previous.taggedEntities(), TAG_SKILL_3);
         }
@@ -173,6 +210,9 @@ public final class OzoneSkillLogic {
 
         SKILL_1_TARGETS.put(player.getUUID(), targets);
         player.getPersistentData().putLong(SKILL_1_ACTIVE_UNTIL, player.level().getGameTime() + SKILL_1_DURATION_TICKS);
+        player.getPersistentData().remove(SKILL_1_INJURY_OUTBURST_APPLIED);
+        player.getPersistentData().remove(SKILL_1_BLEEDING_APPLIED);
+        applySkill1InitialEffects(player.server, targets);
         player.displayClientMessage(Component.literal("附近玩家已获得 ozone_target_1"), true);
     }
 
@@ -244,7 +284,37 @@ public final class OzoneSkillLogic {
 
         clearEntityTags(player.server, targetStore.remove(player.getUUID()), tagName);
         player.getPersistentData().remove(activeUntilKey);
+        if (SKILL_1_ACTIVE_UNTIL.equals(activeUntilKey)) {
+            player.getPersistentData().remove(SKILL_1_INJURY_OUTBURST_APPLIED);
+            player.getPersistentData().remove(SKILL_1_BLEEDING_APPLIED);
+        }
         SkillCooldowns.startCooldown(player, cooldownId, cooldownTicks);
+    }
+
+    private static void updateSkill1Effects(ServerPlayer player) {
+        if (!player.getPersistentData().contains(SKILL_1_ACTIVE_UNTIL)) {
+            return;
+        }
+
+        Set<UUID> targetIds = SKILL_1_TARGETS.get(player.getUUID());
+        if (targetIds == null || targetIds.isEmpty()) {
+            return;
+        }
+
+        long activeUntil = player.getPersistentData().getLong(SKILL_1_ACTIVE_UNTIL);
+        long elapsedTicks = Math.max(0L, SKILL_1_DURATION_TICKS - Math.max(activeUntil - player.level().getGameTime(), 0L));
+
+        if (elapsedTicks >= SKILL_1_INJURY_OUTBURST_START_TICKS
+                && !player.getPersistentData().getBoolean(SKILL_1_INJURY_OUTBURST_APPLIED)) {
+            applySkill1DelayedEffect(player.server, targetIds, "injury_outburst", SKILL_1_INJURY_OUTBURST_DURATION_TICKS);
+            player.getPersistentData().putBoolean(SKILL_1_INJURY_OUTBURST_APPLIED, true);
+        }
+
+        if (elapsedTicks >= SKILL_1_BLEEDING_START_TICKS
+                && !player.getPersistentData().getBoolean(SKILL_1_BLEEDING_APPLIED)) {
+            applySkill1DelayedEffect(player.server, targetIds, "bleeding", SKILL_1_BLEEDING_DURATION_TICKS);
+            player.getPersistentData().putBoolean(SKILL_1_BLEEDING_APPLIED, true);
+        }
     }
 
     private static void updateActiveHouseZone(ServerPlayer player) {
@@ -261,18 +331,25 @@ public final class OzoneSkillLogic {
             return;
         }
 
-        AABB area = new AABB(pos).inflate(HOUSE_RADIUS, HOUSE_RADIUS, HOUSE_RADIUS);
+        AABB area = new AABB(pos).inflate(HOUSE_SEARCH_RADIUS_XZ, HOUSE_SEARCH_RADIUS_Y, HOUSE_SEARCH_RADIUS_XZ);
+        long elapsedTicks = Math.max(0L, player.level().getGameTime() - zone.activatedAt());
         List<LivingEntity> currentTargets = player.serverLevel().getEntitiesOfClass(
                 LivingEntity.class,
                 area,
                 entity -> entity.isAlive()
                         && entity != player
                         && !(entity instanceof StandEntity)
+                        && entity.distanceToSqr(
+                                pos.getX() + 0.5D,
+                                pos.getY() + 0.5D,
+                                pos.getZ() + 0.5D
+                        ) <= HOUSE_RADIUS * HOUSE_RADIUS
         );
 
         Set<UUID> currentIds = new HashSet<>();
         for (LivingEntity entity : currentTargets) {
             entity.addTag(TAG_SKILL_3);
+            applyHouseEffects(entity, elapsedTicks);
             currentIds.add(entity.getUUID());
         }
 
@@ -290,11 +367,35 @@ public final class OzoneSkillLogic {
         previous.addAll(currentIds);
     }
 
+    private static void updateActiveSkillHint(ServerPlayer player) {
+        List<String> activeHints = new ArrayList<>(3);
+        if (isSkill1Active(player)) {
+            activeHints.add("技能1持续中");
+        }
+        if (isSkill2Active(player)) {
+            activeHints.add("技能2持续中");
+        }
+        if (isSkill3Active(player)) {
+            activeHints.add("技能3持续中");
+        }
+
+        if (!activeHints.isEmpty()) {
+            player.displayClientMessage(
+                    Component.literal(String.join("  |  ", activeHints))
+                            .withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD),
+                    true
+            );
+        }
+    }
+
     private static Set<UUID> tagNearbyPlayers(ServerPlayer source, double radius, String tagName) {
+        Vec3 center = source.position().add(0.0D, source.getBbHeight() * 0.5D, 0.0D);
         List<ServerPlayer> players = source.serverLevel().getEntitiesOfClass(
                 ServerPlayer.class,
-                source.getBoundingBox().inflate(radius),
-                player -> player != source && !player.isSpectator()
+                new AABB(center, center).inflate(radius),
+                player -> player != source
+                        && !player.isSpectator()
+                        && player.position().add(0.0D, player.getBbHeight() * 0.5D, 0.0D).distanceToSqr(center) <= radius * radius
         );
 
         Set<UUID> ids = new HashSet<>();
@@ -348,18 +449,73 @@ public final class OzoneSkillLogic {
 
     @Nullable
     private static MobEffect findImprisonEffect() {
-        MobEffect effect = ForgeRegistries.MOB_EFFECTS.getValue(
-                ResourceLocation.fromNamespaceAndPath("more_potion_effects", "imprision")
-        );
+        MobEffect effect = findMorePotionEffect("imprision");
         if (effect != null) {
             return effect;
         }
 
+        return findMorePotionEffect("imprison");
+    }
+
+    @Nullable
+    private static MobEffect findMorePotionEffect(String path) {
         return ForgeRegistries.MOB_EFFECTS.getValue(
-                ResourceLocation.fromNamespaceAndPath("more_potion_effects", "imprison")
+                ResourceLocation.fromNamespaceAndPath("more_potion_effects", path)
         );
     }
 
-    private record ActiveHouseZone(BlockPos pos, Set<UUID> taggedEntities) {
+    private static void applyHouseEffects(LivingEntity entity, long elapsedTicks) {
+        if (elapsedTicks >= HOUSE_HEAVY_2_START_TICKS) {
+            applyMorePotionEffect(entity, "heavy", HOUSE_EFFECT_REFRESH_TICKS, 1);
+        } else if (elapsedTicks >= HOUSE_HEAVY_1_START_TICKS) {
+            applyMorePotionEffect(entity, "heavy", HOUSE_EFFECT_REFRESH_TICKS, 0);
+        }
+
+        if (elapsedTicks >= HOUSE_INJURY_OUTBURST_START_TICKS) {
+            applyMorePotionEffect(entity, "injury_outburst", HOUSE_INJURY_OUTBURST_DURATION_TICKS, 0);
+        }
+
+        if (elapsedTicks >= HOUSE_BLEEDING_START_TICKS) {
+            applyMorePotionEffect(entity, "bleeding", HOUSE_EFFECT_REFRESH_TICKS, 0);
+        }
+
+        if (elapsedTicks >= HOUSE_IMPRISON_START_TICKS) {
+            MobEffect imprison = findImprisonEffect();
+            if (imprison != null) {
+                entity.addEffect(new MobEffectInstance(imprison, HOUSE_EFFECT_REFRESH_TICKS, 0, false, false, false));
+            }
+        }
+    }
+
+    private static void applySkill1InitialEffects(MinecraftServer server, Set<UUID> targetIds) {
+        for (UUID uuid : targetIds) {
+            Entity entity = findEntityByUuid(server, uuid);
+            if (entity instanceof LivingEntity living) {
+                applyMorePotionEffect(living, "heavy", SKILL_1_HEAVY_DURATION_TICKS, 0);
+            }
+        }
+    }
+
+    private static void applySkill1DelayedEffect(MinecraftServer server, Set<UUID> targetIds, String effectId, int durationTicks) {
+        for (UUID uuid : targetIds) {
+            Entity entity = findEntityByUuid(server, uuid);
+            if (entity instanceof LivingEntity living) {
+                applyMorePotionEffect(living, effectId, durationTicks, 0);
+            }
+        }
+    }
+
+    private static void applyMorePotionEffect(LivingEntity entity, String effectId, int durationTicks, int amplifier) {
+        if (durationTicks <= 0) {
+            return;
+        }
+
+        MobEffect effect = findMorePotionEffect(effectId);
+        if (effect != null) {
+            entity.addEffect(new MobEffectInstance(effect, durationTicks, amplifier, false, false, false));
+        }
+    }
+
+    private record ActiveHouseZone(BlockPos pos, Set<UUID> taggedEntities, long activatedAt) {
     }
 }

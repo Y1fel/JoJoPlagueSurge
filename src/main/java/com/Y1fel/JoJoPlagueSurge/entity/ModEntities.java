@@ -2,6 +2,7 @@ package com.Y1fel.JoJoPlagueSurge.entity;
 
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.bluehawaii.BlueHawaiiEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.duvillager.CriminalDuVillagerEntity;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.duvillager.DuVillagerEntity;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.duwang.DuWangEntity;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.miracle.MiracleEntity;
@@ -26,6 +27,11 @@ public class ModEntities {
                     ()->EntityType.Builder.of(DuVillagerEntity::new,MobCategory.MONSTER)
                             .sized(0.6F, 1.8F)
                             .build("duvillager"));
+    public static final RegistryObject<EntityType<CriminalDuVillagerEntity>> CRIMINAL_DUVILLAGER =
+            ENTITY_TYPES.register("criminal_duvillager",
+                    ()->EntityType.Builder.of(CriminalDuVillagerEntity::new, MobCategory.MONSTER)
+                            .sized(0.6F, 1.8F)
+                            .build("criminal_duvillager"));
     public static final RegistryObject<EntityType<DuWangEntity>> DUWANG =
             ENTITY_TYPES.register("duwang",
                     ()->EntityType.Builder.of(DuWangEntity::new,MobCategory.MONSTER)

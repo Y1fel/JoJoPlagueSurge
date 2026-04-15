@@ -59,7 +59,10 @@ public final class SkillCooldowns {
                         getRemainingTicks(player, OZONE_SKILL_1),
                         getInitialDuration(player, OZONE_SKILL_1),
                         getRemainingTicks(player, OZONE_SKILL_2),
-                        getInitialDuration(player, OZONE_SKILL_2)
+                        getInitialDuration(player, OZONE_SKILL_2),
+                        OzoneSkillLogic.isSkill1Active(player),
+                        OzoneSkillLogic.isSkill2Active(player),
+                        OzoneSkillLogic.isSkill3Active(player)
                 )
         );
     }

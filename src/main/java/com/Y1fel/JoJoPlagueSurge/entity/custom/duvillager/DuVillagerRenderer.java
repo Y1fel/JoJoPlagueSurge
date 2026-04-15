@@ -8,8 +8,8 @@ import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
-public class DuVillagerRenderer extends MobRenderer<DuVillagerEntity, PlayerModel<DuVillagerEntity>> {
-    private static final ResourceLocation[] TEXTURES = new ResourceLocation[10];
+public class DuVillagerRenderer<T extends DuVillagerEntity> extends MobRenderer<T, PlayerModel<T>> {
+    private static final ResourceLocation[] TEXTURES = new ResourceLocation[DuVillagerEntity.NORMAL_VARIANT_COUNT];
 
     static {
         for (int i = 0; i < TEXTURES.length; i++) {
@@ -26,7 +26,7 @@ public class DuVillagerRenderer extends MobRenderer<DuVillagerEntity, PlayerMode
 
     @Override
     @NotNull
-    public ResourceLocation getTextureLocation(@NotNull DuVillagerEntity entity) {
+    public ResourceLocation getTextureLocation(@NotNull T entity) {
         int variant = entity.getVariant();
         if (variant < 1 || variant > TEXTURES.length) {
             return TEXTURES[0];

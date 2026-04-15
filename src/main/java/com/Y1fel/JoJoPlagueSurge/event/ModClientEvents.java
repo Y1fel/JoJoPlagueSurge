@@ -31,7 +31,8 @@ public class ModClientEvents {
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.BLUEHAWAII.get(), BlueHawaiiRenderer::new);
-        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), DuVillagerRenderer::new);
+        event.registerEntityRenderer(ModEntities.DUVILLAGER.get(), context -> new DuVillagerRenderer<>(context));
+        event.registerEntityRenderer(ModEntities.CRIMINAL_DUVILLAGER.get(), context -> new DuVillagerRenderer<>(context));
         event.registerEntityRenderer(ModEntities.DUWANG.get(), DuWangRenderer::new);
         event.registerEntityRenderer(ModEntities.MIRACLE.get(), MiracleRenderer::new);
         event.registerEntityRenderer(ModEntities.TRACKING_TORNADO.get(), TrackingTornadoRenderer::new);

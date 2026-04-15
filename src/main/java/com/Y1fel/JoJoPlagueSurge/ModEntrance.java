@@ -67,6 +67,7 @@ public class ModEntrance {
         if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS){
             event.accept(ModItems.BLUEHAWAII_SPAWN_EGG);
             event.accept(ModItems.DUVILLAGER_SPAWN_EGG);
+            event.accept(ModItems.CRIMINAL_DUVILLAGER_SPAWN_EGG);
             event.accept(ModItems.DUWANG_SPAWN_EGG);
             event.accept(ModItems.MIRACLE_SPAWN_EGG);
         }

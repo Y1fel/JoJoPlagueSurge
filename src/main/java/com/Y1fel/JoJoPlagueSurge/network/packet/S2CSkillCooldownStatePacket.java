@@ -19,6 +19,9 @@ public class S2CSkillCooldownStatePacket {
     private final int ozoneSkill1Initial;
     private final int ozoneSkill2Remaining;
     private final int ozoneSkill2Initial;
+    private final boolean ozoneSkill1Active;
+    private final boolean ozoneSkill2Active;
+    private final boolean ozoneSkill3Active;
 
     public S2CSkillCooldownStatePacket(
             int duwangSkill1Remaining,
@@ -30,7 +33,10 @@ public class S2CSkillCooldownStatePacket {
             int ozoneSkill1Remaining,
             int ozoneSkill1Initial,
             int ozoneSkill2Remaining,
-            int ozoneSkill2Initial
+            int ozoneSkill2Initial,
+            boolean ozoneSkill1Active,
+            boolean ozoneSkill2Active,
+            boolean ozoneSkill3Active
     ) {
         this.duwangSkill1Remaining = duwangSkill1Remaining;
         this.duwangSkill1Initial = duwangSkill1Initial;
@@ -42,6 +48,9 @@ public class S2CSkillCooldownStatePacket {
         this.ozoneSkill1Initial = ozoneSkill1Initial;
         this.ozoneSkill2Remaining = ozoneSkill2Remaining;
         this.ozoneSkill2Initial = ozoneSkill2Initial;
+        this.ozoneSkill1Active = ozoneSkill1Active;
+        this.ozoneSkill2Active = ozoneSkill2Active;
+        this.ozoneSkill3Active = ozoneSkill3Active;
     }
 
     public static void encode(S2CSkillCooldownStatePacket packet, FriendlyByteBuf buf) {
@@ -55,6 +64,9 @@ public class S2CSkillCooldownStatePacket {
         buf.writeInt(packet.ozoneSkill1Initial);
         buf.writeInt(packet.ozoneSkill2Remaining);
         buf.writeInt(packet.ozoneSkill2Initial);
+        buf.writeBoolean(packet.ozoneSkill1Active);
+        buf.writeBoolean(packet.ozoneSkill2Active);
+        buf.writeBoolean(packet.ozoneSkill3Active);
     }
 
     public static S2CSkillCooldownStatePacket decode(FriendlyByteBuf buf) {
@@ -68,7 +80,10 @@ public class S2CSkillCooldownStatePacket {
                 buf.readInt(),
                 buf.readInt(),
                 buf.readInt(),
-                buf.readInt()
+                buf.readInt(),
+                buf.readBoolean(),
+                buf.readBoolean(),
+                buf.readBoolean()
         );
     }
 
@@ -116,5 +131,17 @@ public class S2CSkillCooldownStatePacket {
 
     public int getOzoneSkill2Initial() {
         return ozoneSkill2Initial;
+    }
+
+    public boolean isOzoneSkill1Active() {
+        return ozoneSkill1Active;
+    }
+
+    public boolean isOzoneSkill2Active() {
+        return ozoneSkill2Active;
+    }
+
+    public boolean isOzoneSkill3Active() {
+        return ozoneSkill3Active;
     }
 }

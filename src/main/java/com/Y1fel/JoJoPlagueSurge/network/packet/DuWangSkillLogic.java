@@ -13,8 +13,10 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -22,6 +24,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
@@ -106,8 +109,12 @@ public class DuWangSkillLogic {
         player.getPersistentData().putLong(SKILL_2_LAST_USE, player.level().getGameTime());
         SkillCooldowns.startCooldown(player, SkillCooldowns.DUWANG_SKILL_2, SKILL_2_COOLDOWN_TICKS);
 
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 20 * 10, 1));
-        player.addEffect(new MobEffectInstance(MobEffects.HEALTH_BOOST, 20 * 10, 0));
+        MobEffect solidShield = findMorePotionEffect("solid_shield");
+        if (solidShield != null) {
+            player.addEffect(new MobEffectInstance(solidShield, 20 * 15, 0, false, false, false));
+        }
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 20 * 15, 1, false, false, false));
+        player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 20 * 5, 0, false, false, false));
 
         ServerLevel level = player.serverLevel();
         level.sendParticles(net.minecraft.core.particles.ParticleTypes.CLOUD,
@@ -161,5 +168,12 @@ public class DuWangSkillLogic {
 
     private static DuWangEntity findOwnedStand(ServerPlayer player) {
         return StandManager.findNearestOwnedStand(player, DuWangEntity.class);
+    }
+
+    @Nullable
+    private static MobEffect findMorePotionEffect(String path) {
+        return ForgeRegistries.MOB_EFFECTS.getValue(
+                ResourceLocation.fromNamespaceAndPath("more_potion_effects", path)
+        );
     }
 }

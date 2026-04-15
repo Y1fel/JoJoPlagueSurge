@@ -22,6 +22,7 @@ public class ModCreativeModeTabs {
                         pOutput.accept(ModBlocks.OZONE.get());
                         pOutput.accept(ModItems.BLUEHAWAII_SPAWN_EGG.get());
                         pOutput.accept(ModItems.DUVILLAGER_SPAWN_EGG.get());
+                        pOutput.accept(ModItems.CRIMINAL_DUVILLAGER_SPAWN_EGG.get());
                         pOutput.accept(ModItems.DUWANG_SPAWN_EGG.get());
                         pOutput.accept(ModItems.MIRACLE_SPAWN_EGG.get());
                         pOutput.accept(ModItems.BLOODY_TOOTH.get());
