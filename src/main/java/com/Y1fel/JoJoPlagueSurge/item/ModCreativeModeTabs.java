@@ -28,6 +28,7 @@ public class ModCreativeModeTabs {
                         pOutput.accept(ModItems.BLOODY_TOOTH.get());
                         pOutput.accept(ModItems.STAND_DISC.get());
                         pOutput.accept(ModItems.BLUEHAWAII_STAND_DISC.get());
+                        pOutput.accept(ModItems.SPIRIT_VISION_POTION.get());
                     }).build());
     public static void register(IEventBus eventBus) {
         CREATIVE_MODE_TABS.register(eventBus);

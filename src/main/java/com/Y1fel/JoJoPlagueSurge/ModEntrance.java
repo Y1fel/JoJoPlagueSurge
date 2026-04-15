@@ -2,6 +2,7 @@ package com.Y1fel.JoJoPlagueSurge;
 
 import com.Y1fel.JoJoPlagueSurge.block.ModBlocks;
 import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
+import com.Y1fel.JoJoPlagueSurge.effect.ModEffects;
 import com.Y1fel.JoJoPlagueSurge.event.ForgeEvents;
 import com.Y1fel.JoJoPlagueSurge.item.ModCreativeModeTabs;
 import com.Y1fel.JoJoPlagueSurge.item.ModItems;
@@ -35,6 +36,7 @@ public class ModEntrance {
         ModItems.register(modEventBus);
         ModCreativeModeTabs.register(modEventBus);
         ModBlocks.register(modEventBus);
+        ModEffects.register(modEventBus);
         ModEntities.register(modEventBus);
 
         MinecraftForge.EVENT_BUS.register(this);
@@ -63,6 +65,9 @@ public class ModEntrance {
             event.accept(ModItems.BLOODY_TOOTH);
             event.accept(ModItems.STAND_DISC);
             event.accept(ModItems.BLUEHAWAII_STAND_DISC);
+        }
+        if (event.getTabKey() == CreativeModeTabs.FOOD_AND_DRINKS) {
+            event.accept(ModItems.SPIRIT_VISION_POTION);
         }
         if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS){
             event.accept(ModItems.BLUEHAWAII_SPAWN_EGG);

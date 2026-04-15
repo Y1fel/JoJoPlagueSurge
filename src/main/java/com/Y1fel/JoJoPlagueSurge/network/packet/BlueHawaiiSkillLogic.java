@@ -193,8 +193,6 @@ public final class BlueHawaiiSkillLogic {
         clearAnchor(tag);
 
         player.removeEffect(MobEffects.GLOWING);
-        player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
-        player.removeEffect(MobEffects.JUMP);
         MobEffect imprison = findImprisonEffect();
         if (imprison != null) {
             player.removeEffect(imprison);
@@ -229,8 +227,6 @@ public final class BlueHawaiiSkillLogic {
 
     private static void applyOwnerEffects(ServerPlayer player) {
         player.addEffect(new MobEffectInstance(MobEffects.GLOWING, 220, 0, false, false, false));
-        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 220, 255, false, false, false));
-        player.addEffect(new MobEffectInstance(MobEffects.JUMP, 220, 128, false, false, false));
 
         MobEffect imprison = findImprisonEffect();
         if (imprison != null) {
