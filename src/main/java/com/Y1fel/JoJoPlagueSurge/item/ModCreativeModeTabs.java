@@ -25,10 +25,12 @@ public class ModCreativeModeTabs {
                         pOutput.accept(ModItems.CRIMINAL_DUVILLAGER_SPAWN_EGG.get());
                         pOutput.accept(ModItems.DUWANG_SPAWN_EGG.get());
                         pOutput.accept(ModItems.MIRACLE_SPAWN_EGG.get());
+                        pOutput.accept(ModItems.STONEINSECT_SPAWN_EGG.get());
                         pOutput.accept(ModItems.BLOODY_TOOTH.get());
                         pOutput.accept(ModItems.STAND_DISC.get());
                         pOutput.accept(ModItems.BLUEHAWAII_STAND_DISC.get());
                         pOutput.accept(ModItems.SPIRIT_VISION_POTION.get());
+                        pOutput.accept(ModItems.SKILL_1_TEST_POTION.get());
                     }).build());
     public static void register(IEventBus eventBus) {
         CREATIVE_MODE_TABS.register(eventBus);

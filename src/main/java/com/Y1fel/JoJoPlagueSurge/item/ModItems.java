@@ -26,6 +26,8 @@ public class ModItems {
                     StandType.BLUE_HAWAII));
     public static final RegistryObject<Item> SPIRIT_VISION_POTION =
             ITEMS.register("spirit_vision_potion", () -> new SpiritVisionPotionItem(new Item.Properties()));
+    public static final RegistryObject<Item> SKILL_1_TEST_POTION =
+            ITEMS.register("skill_1_test_potion", () -> new Skill1TestPotionItem(new Item.Properties()));
     public static final RegistryObject<ForgeSpawnEggItem> BLUEHAWAII_SPAWN_EGG =
             ITEMS.register("bluehawaii_spawn_egg", () -> new ForgeSpawnEggItem(
                     ModEntities.BLUEHAWAII,
@@ -59,6 +61,13 @@ public class ModItems {
                     ModEntities.MIRACLE,
                     0x140C22,
                     0xE1C56A,
+                    new Item.Properties()
+            ));
+    public static final RegistryObject<ForgeSpawnEggItem> STONEINSECT_SPAWN_EGG =
+            ITEMS.register("stoneinsect_spawn_egg", () -> new ForgeSpawnEggItem(
+                    ModEntities.STONEINSECT,
+                    0x4D4B45,
+                    0xA8936B,
                     new Item.Properties()
             ));
     public static void register(IEventBus bus) {

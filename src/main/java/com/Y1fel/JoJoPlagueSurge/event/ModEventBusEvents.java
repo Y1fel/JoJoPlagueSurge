@@ -7,6 +7,7 @@ import com.Y1fel.JoJoPlagueSurge.entity.custom.duvillager.CriminalDuVillagerEnti
 import com.Y1fel.JoJoPlagueSurge.entity.custom.duvillager.DuVillagerEntity;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.duwang.DuWangEntity;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.miracle.MiracleEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.stoneinsect.StoneInsectEntity;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -21,5 +22,6 @@ public class ModEventBusEvents {
         event.put(ModEntities.CRIMINAL_DUVILLAGER.get(), CriminalDuVillagerEntity.createAttributes().build());
         event.put(ModEntities.DUWANG.get(), DuWangEntity.createAttributes().build());
         event.put(ModEntities.MIRACLE.get(), MiracleEntity.createAttributes().build());
+        event.put(ModEntities.STONEINSECT.get(), StoneInsectEntity.createAttributes().build());
     }
 }

@@ -75,6 +75,7 @@ public class ModEntrance {
             event.accept(ModItems.CRIMINAL_DUVILLAGER_SPAWN_EGG);
             event.accept(ModItems.DUWANG_SPAWN_EGG);
             event.accept(ModItems.MIRACLE_SPAWN_EGG);
+            event.accept(ModItems.STONEINSECT_SPAWN_EGG);
         }
     }
 

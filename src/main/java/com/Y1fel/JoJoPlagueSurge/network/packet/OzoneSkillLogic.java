@@ -63,7 +63,7 @@ public final class OzoneSkillLogic {
     private static final int HOUSE_IMPRISON_START_TICKS = 20 * 150;
 
     private static final double SKILL_PLAYER_RADIUS = 16.0D;
-    private static final double HOUSE_RADIUS = 32.0D;
+    private static final double HOUSE_RADIUS = 24.0D;
     private static final double HOUSE_SEARCH_RADIUS_XZ = 40.0D;
     private static final double HOUSE_SEARCH_RADIUS_Y = 40.0D;
 
@@ -163,10 +163,10 @@ public final class OzoneSkillLogic {
 
         ActiveHouseZone previous = ACTIVE_HOUSES.put(
                 player.getUUID(),
-                new ActiveHouseZone(pos.immutable(), new HashSet<>(), player.level().getGameTime())
+                new ActiveHouseZone(pos.immutable(), new HashMap<>(), player.level().getGameTime())
         );
         if (previous != null) {
-            clearEntityTags(player.server, previous.taggedEntities(), TAG_SKILL_3);
+            clearEntityTags(player.server, previous.trackedEntities().keySet(), TAG_SKILL_3);
         }
 
         player.displayClientMessage(Component.literal("OZONE 房子已启动"), true);
@@ -181,7 +181,7 @@ public final class OzoneSkillLogic {
 
         ActiveHouseZone zone = ACTIVE_HOUSES.remove(owner);
         if (zone != null && zone.pos().equals(pos)) {
-            clearEntityTags(serverLevel.getServer(), zone.taggedEntities(), TAG_SKILL_3);
+            clearEntityTags(serverLevel.getServer(), zone.trackedEntities().keySet(), TAG_SKILL_3);
             ServerPlayer ownerPlayer = serverLevel.getServer().getPlayerList().getPlayer(owner);
             if (ownerPlayer != null) {
                 startHouseRecallCooldown(ownerPlayer);
@@ -244,7 +244,7 @@ public final class OzoneSkillLogic {
     private static void recallHouse(ServerPlayer player, BlockPos pos) {
         ActiveHouseZone zone = ACTIVE_HOUSES.remove(player.getUUID());
         if (zone != null) {
-            clearEntityTags(player.server, zone.taggedEntities(), TAG_SKILL_3);
+            clearEntityTags(player.server, zone.trackedEntities().keySet(), TAG_SKILL_3);
         }
 
         HOUSE_OWNERS.remove(pos.asLong());
@@ -325,14 +325,14 @@ public final class OzoneSkillLogic {
 
         BlockPos pos = zone.pos();
         if (!player.serverLevel().getBlockState(pos).is(ModBlocks.OZONE.get())) {
-            clearEntityTags(player.server, zone.taggedEntities(), TAG_SKILL_3);
+            clearEntityTags(player.server, zone.trackedEntities().keySet(), TAG_SKILL_3);
             ACTIVE_HOUSES.remove(player.getUUID());
             HOUSE_OWNERS.remove(pos.asLong());
             return;
         }
 
         AABB area = new AABB(pos).inflate(HOUSE_SEARCH_RADIUS_XZ, HOUSE_SEARCH_RADIUS_Y, HOUSE_SEARCH_RADIUS_XZ);
-        long elapsedTicks = Math.max(0L, player.level().getGameTime() - zone.activatedAt());
+        long now = player.level().getGameTime();
         List<LivingEntity> currentTargets = player.serverLevel().getEntitiesOfClass(
                 LivingEntity.class,
                 area,
@@ -347,24 +347,24 @@ public final class OzoneSkillLogic {
         );
 
         Set<UUID> currentIds = new HashSet<>();
+        Map<UUID, Long> trackedEntities = zone.trackedEntities();
         for (LivingEntity entity : currentTargets) {
             entity.addTag(TAG_SKILL_3);
-            applyHouseEffects(entity, elapsedTicks);
-            currentIds.add(entity.getUUID());
+            UUID entityId = entity.getUUID();
+            long enteredAt = trackedEntities.computeIfAbsent(entityId, unused -> now);
+            applyHouseEffects(entity, Math.max(0L, now - enteredAt));
+            currentIds.add(entityId);
         }
 
-        Set<UUID> previous = zone.taggedEntities();
-        for (UUID uuid : new HashSet<>(previous)) {
+        for (UUID uuid : new HashSet<>(trackedEntities.keySet())) {
             if (!currentIds.contains(uuid)) {
                 Entity entity = findEntityByUuid(player.server, uuid);
                 if (entity != null) {
                     entity.removeTag(TAG_SKILL_3);
                 }
-                previous.remove(uuid);
+                trackedEntities.remove(uuid);
             }
         }
-
-        previous.addAll(currentIds);
     }
 
     private static void updateActiveSkillHint(ServerPlayer player) {
@@ -516,6 +516,6 @@ public final class OzoneSkillLogic {
         }
     }
 
-    private record ActiveHouseZone(BlockPos pos, Set<UUID> taggedEntities, long activatedAt) {
+    private record ActiveHouseZone(BlockPos pos, Map<UUID, Long> trackedEntities, long activatedAt) {
     }
 }

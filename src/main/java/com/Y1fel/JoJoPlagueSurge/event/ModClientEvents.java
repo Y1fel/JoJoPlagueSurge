@@ -7,6 +7,7 @@ import com.Y1fel.JoJoPlagueSurge.entity.custom.bluehawaii.BlueHawaiiRenderer;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.duvillager.DuVillagerRenderer;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.duwang.DuWangRenderer;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.miracle.MiracleRenderer;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.stoneinsect.StoneInsectRenderer;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.trackingtornado.TrackingTornadoRenderer;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
@@ -35,6 +36,7 @@ public class ModClientEvents {
         event.registerEntityRenderer(ModEntities.CRIMINAL_DUVILLAGER.get(), context -> new DuVillagerRenderer<>(context));
         event.registerEntityRenderer(ModEntities.DUWANG.get(), DuWangRenderer::new);
         event.registerEntityRenderer(ModEntities.MIRACLE.get(), MiracleRenderer::new);
+        event.registerEntityRenderer(ModEntities.STONEINSECT.get(), StoneInsectRenderer::new);
         event.registerEntityRenderer(ModEntities.TRACKING_TORNADO.get(), TrackingTornadoRenderer::new);
     }
 

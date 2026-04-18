@@ -28,8 +28,6 @@ public abstract class StandEntity extends Mob {
     private static final double FOLLOW_HEIGHT_OFFSET = 0.80D;
 
     private int missingOwnerTicks;
-    private int attackCooldownTicks;
-
     protected StandEntity(EntityType<? extends Mob> entityType, Level level) {
         super(entityType, level);
         this.noPhysics = true;
@@ -41,7 +39,7 @@ public abstract class StandEntity extends Mob {
                 .add(Attributes.MAX_HEALTH, 50.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.35D)
                 .add(Attributes.FOLLOW_RANGE, 48.0D)
-                .add(Attributes.ATTACK_DAMAGE, 6.0D)
+                .add(Attributes.ATTACK_DAMAGE, 0.0D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.8D);
     }
 
@@ -93,45 +91,7 @@ public abstract class StandEntity extends Mob {
 
         missingOwnerTicks = 0;
         followOwner(owner);
-        syncTargetFromOwner(owner);
-        tickCombat(owner);
-    }
-
-    protected void syncTargetFromOwner(Player owner) {
-        LivingEntity lastHurtMob = owner.getLastHurtMob();
-        if (lastHurtMob != null
-                && lastHurtMob.isAlive()
-                && lastHurtMob != owner
-                && !(lastHurtMob instanceof Player)) {
-            this.setTarget(lastHurtMob);
-        }
-    }
-
-    protected void tickCombat(Player owner) {
-        if (attackCooldownTicks > 0) {
-            attackCooldownTicks--;
-        }
-
-        LivingEntity target = this.getTarget();
-        if (target == null || !target.isAlive() || target == owner || target instanceof Player) {
-            if (target instanceof Player) {
-                this.setTarget(null);
-            }
-            return;
-        }
-
-        Vec3 toTarget = target.position().add(0.0D, target.getBbHeight() * 0.5D, 0.0D).subtract(this.position());
-        double distanceToTarget = toTarget.length();
-
-        if (distanceToTarget > 0.001D) {
-            Vec3 chase = toTarget.normalize().scale(0.35D);
-            this.setDeltaMovement(this.getDeltaMovement().scale(0.55D).add(chase));
-        }
-
-        if (distanceToTarget <= 2.2D && attackCooldownTicks <= 0) {
-            this.doHurtTarget(target);
-            attackCooldownTicks = 10;
-        }
+        this.setTarget(null);
     }
 
     protected void followOwner(Player owner) {

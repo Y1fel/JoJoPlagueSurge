@@ -1,5 +1,6 @@
 package com.Y1fel.JoJoPlagueSurge.entity.custom.stand;
 
+import com.Y1fel.JoJoPlagueSurge.network.packet.SkillCooldowns;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,6 +30,7 @@ public final class StandManager {
 
     public static void setOwnedStandType(ServerPlayer player, StandType type) {
         player.getPersistentData().putString(OWNED_STAND_TYPE, type.getId());
+        SkillCooldowns.clearCooldownsForStand(player, type);
     }
 
     public static void clearOwnership(ServerPlayer player) {

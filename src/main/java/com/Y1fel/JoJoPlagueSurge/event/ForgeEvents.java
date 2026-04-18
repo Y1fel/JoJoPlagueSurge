@@ -1,5 +1,6 @@
 package com.Y1fel.JoJoPlagueSurge.event;
 
+import com.Y1fel.JoJoPlagueSurge.item.Skill1TestPotionItem;
 import com.Y1fel.JoJoPlagueSurge.network.packet.BlueHawaiiSkillLogic;
 import com.Y1fel.JoJoPlagueSurge.network.packet.OzoneSkillLogic;
 import com.Y1fel.JoJoPlagueSurge.network.packet.SkillCooldowns;
@@ -27,6 +28,7 @@ public class ForgeEvents {
         }
 
         if (event.player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+            Skill1TestPotionItem.onServerPlayerTick(serverPlayer);
             BlueHawaiiSkillLogic.onServerPlayerTick(serverPlayer);
             OzoneSkillLogic.onServerPlayerTick(serverPlayer);
             SkillCooldowns.sync(serverPlayer);

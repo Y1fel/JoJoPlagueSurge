@@ -1,5 +1,6 @@
 package com.Y1fel.JoJoPlagueSurge.network.packet;
 
+import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandType;
 import com.Y1fel.JoJoPlagueSurge.network.ModNetwork;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -46,6 +47,13 @@ public final class SkillCooldowns {
         player.getPersistentData().remove(key(cooldownId, DURATION_SUFFIX));
     }
 
+    public static void clearCooldownsForStand(ServerPlayer player, StandType standType) {
+        for (String cooldownId : cooldownIdsForStand(standType)) {
+            clearCooldown(player, cooldownId);
+        }
+        sync(player);
+    }
+
     public static void sync(ServerPlayer player) {
         ModNetwork.CHANNEL.send(
                 PacketDistributor.PLAYER.with(() -> player),
@@ -69,5 +77,12 @@ public final class SkillCooldowns {
 
     private static String key(String cooldownId, String suffix) {
         return PREFIX + cooldownId + suffix;
+    }
+
+    private static String[] cooldownIdsForStand(StandType standType) {
+        return switch (standType) {
+            case DUWANG -> new String[]{DUWANG_SKILL_1, DUWANG_SKILL_2};
+            case BLUE_HAWAII -> new String[]{BLUE_HAWAII_RELEASE};
+        };
     }
 }
