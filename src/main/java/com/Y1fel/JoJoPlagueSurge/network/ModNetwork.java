@@ -1,6 +1,7 @@
 package com.Y1fel.JoJoPlagueSurge.network;
 
 import com.Y1fel.JoJoPlagueSurge.ModEntrance;
+import com.Y1fel.JoJoPlagueSurge.network.packet.C2SApplyStepUpPacket;
 import com.Y1fel.JoJoPlagueSurge.network.packet.C2SToggleOwnedStandPacket;
 import com.Y1fel.JoJoPlagueSurge.network.packet.C2SUseDuWangSkillPacket;
 import com.Y1fel.JoJoPlagueSurge.network.packet.S2CSkillCooldownStatePacket;
@@ -31,6 +32,11 @@ public class ModNetwork {
                 C2SToggleOwnedStandPacket::encode,
                 C2SToggleOwnedStandPacket::decode,
                 C2SToggleOwnedStandPacket::handle);
+        CHANNEL.registerMessage(id++,
+                C2SApplyStepUpPacket.class,
+                C2SApplyStepUpPacket::encode,
+                C2SApplyStepUpPacket::decode,
+                C2SApplyStepUpPacket::handle);
         CHANNEL.messageBuilder(S2CSkillCooldownStatePacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(S2CSkillCooldownStatePacket::encode)
                 .decoder(S2CSkillCooldownStatePacket::decode)

@@ -10,6 +10,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
@@ -34,6 +35,8 @@ import java.util.UUID;
 public final class BlueHawaiiSkillLogic {
     private static final String HAWAII_TARGET_TAG = "hawaii_target";
     private static final String LOCKED_TARGET_UUID = "jojoplaguesurge.bluehawaii.locked_target";
+    private static final String LOCKED_TARGET_FROM_TOOTH = "jojoplaguesurge.bluehawaii.locked_target_from_tooth";
+    private static final String TOOTH_MARKED = "jojoplaguesurge.bluehawaii.tooth_marked";
     private static final String HUNT_ACTIVE = "jojoplaguesurge.bluehawaii.hunt_active";
     private static final String HAD_TOOTH_LAST_TICK = "jojoplaguesurge.bluehawaii.had_tooth_last_tick";
     private static final String TOOTH_RESTORE_AT = "jojoplaguesurge.bluehawaii.tooth_restore_at";
@@ -89,7 +92,7 @@ public final class BlueHawaiiSkillLogic {
             return;
         }
 
-        setLockedTarget(player, target);
+        setLockedTarget(player, target, false);
         notifyLock(player.server.getPlayerList().getPlayers(), target, player, true);
     }
 
@@ -99,6 +102,7 @@ public final class BlueHawaiiSkillLogic {
         boolean hadTooth = tag.getBoolean(HAD_TOOTH_LAST_TICK);
 
         if (hasTooth && !hadTooth && !hasBlueHawaiiStand(player) && !player.isSpectator()) {
+            tag.putBoolean(TOOTH_MARKED, true);
             lockTargetForBlueHawaiiOwners(player);
         }
 
@@ -112,7 +116,7 @@ public final class BlueHawaiiSkillLogic {
                 continue;
             }
 
-            setLockedTarget(candidate, target);
+            setLockedTarget(candidate, target, true);
         }
 
         notifyLock(players, target, target, false);
@@ -199,6 +203,7 @@ public final class BlueHawaiiSkillLogic {
         }
 
         if (startCooldown) {
+            clearAllToothTriggeredMarks(player.server);
             SkillCooldowns.startCooldown(player, SkillCooldowns.BLUE_HAWAII_RELEASE, RELEASE_COOLDOWN_TICKS);
             tag.putLong(TOOTH_RESTORE_AT, player.level().getGameTime() + RELEASE_COOLDOWN_TICKS);
             player.displayClientMessage(Component.literal("蓝色夏威夷能力已解除"), true);
@@ -290,14 +295,46 @@ public final class BlueHawaiiSkillLogic {
         return findEntityByUuid(player.serverLevel(), tag.getUUID(LOCKED_TARGET_UUID));
     }
 
-    private static void setLockedTarget(ServerPlayer player, Entity target) {
+    private static void setLockedTarget(ServerPlayer player, Entity target, boolean fromTooth) {
         Entity previousTarget = getLockedTarget(player);
         if (previousTarget != null && previousTarget != target) {
             previousTarget.removeTag(HAWAII_TARGET_TAG);
         }
 
         player.getPersistentData().putUUID(LOCKED_TARGET_UUID, target.getUUID());
+        player.getPersistentData().putBoolean(LOCKED_TARGET_FROM_TOOTH, fromTooth);
         target.addTag(HAWAII_TARGET_TAG);
+    }
+
+    private static void clearAllToothTriggeredMarks(MinecraftServer server) {
+        List<ServerPlayer> players = server.getPlayerList().getPlayers();
+        for (ServerPlayer player : players) {
+            CompoundTag tag = player.getPersistentData();
+            if (tag.getBoolean(TOOTH_MARKED)) {
+                tag.remove(TOOTH_MARKED);
+                player.removeTag(HAWAII_TARGET_TAG);
+            }
+
+            if (tag.getBoolean(LOCKED_TARGET_FROM_TOOTH)) {
+                tag.remove(LOCKED_TARGET_UUID);
+                tag.remove(LOCKED_TARGET_FROM_TOOTH);
+            }
+        }
+
+        reapplyLockedTargetTags(players);
+    }
+
+    private static void reapplyLockedTargetTags(List<ServerPlayer> players) {
+        for (ServerPlayer player : players) {
+            if (!player.getPersistentData().hasUUID(LOCKED_TARGET_UUID)) {
+                continue;
+            }
+
+            Entity target = getLockedTarget(player);
+            if (target != null) {
+                target.addTag(HAWAII_TARGET_TAG);
+            }
+        }
     }
 
     @Nullable

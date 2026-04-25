@@ -41,6 +41,14 @@ public class ModKeyMappings {
             CATEGORY
     );
 
+    public static final KeyMapping STEP_UP_TEST = new KeyMapping(
+            "key." + ModEntrance.MODID + ".step_up_test",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_U,
+            CATEGORY
+    );
+
 
     private ModKeyMappings() {
     }

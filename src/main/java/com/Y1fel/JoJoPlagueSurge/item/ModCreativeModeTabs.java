@@ -16,14 +16,12 @@ public class ModCreativeModeTabs {
 
     public static final RegistryObject<CreativeModeTab> TEST_TAB =
             CREATIVE_MODE_TABS.register("jojo_tab", () -> CreativeModeTab.builder()
-                    .icon(()->new ItemStack(ModItems.BLUEHAWAII_SPAWN_EGG.get()))
+                    .icon(() -> new ItemStack(ModItems.STONEINSECT_SPAWN_EGG.get()))
                     .title(Component.translatable("itemGroup.jojo_tab"))
                     .displayItems((pParameters, pOutput) -> {
                         pOutput.accept(ModBlocks.OZONE.get());
-                        pOutput.accept(ModItems.BLUEHAWAII_SPAWN_EGG.get());
                         pOutput.accept(ModItems.DUVILLAGER_SPAWN_EGG.get());
                         pOutput.accept(ModItems.CRIMINAL_DUVILLAGER_SPAWN_EGG.get());
-                        pOutput.accept(ModItems.DUWANG_SPAWN_EGG.get());
                         pOutput.accept(ModItems.MIRACLE_SPAWN_EGG.get());
                         pOutput.accept(ModItems.STONEINSECT_SPAWN_EGG.get());
                         pOutput.accept(ModItems.BLOODY_TOOTH.get());
@@ -32,6 +30,7 @@ public class ModCreativeModeTabs {
                         pOutput.accept(ModItems.SPIRIT_VISION_POTION.get());
                         pOutput.accept(ModItems.SKILL_1_TEST_POTION.get());
                     }).build());
+
     public static void register(IEventBus eventBus) {
         CREATIVE_MODE_TABS.register(eventBus);
     }

@@ -1,8 +1,8 @@
 package com.Y1fel.JoJoPlagueSurge;
 
 import com.Y1fel.JoJoPlagueSurge.block.ModBlocks;
-import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
 import com.Y1fel.JoJoPlagueSurge.effect.ModEffects;
+import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
 import com.Y1fel.JoJoPlagueSurge.event.ForgeEvents;
 import com.Y1fel.JoJoPlagueSurge.item.ModCreativeModeTabs;
 import com.Y1fel.JoJoPlagueSurge.item.ModItems;
@@ -69,11 +69,9 @@ public class ModEntrance {
         if (event.getTabKey() == CreativeModeTabs.FOOD_AND_DRINKS) {
             event.accept(ModItems.SPIRIT_VISION_POTION);
         }
-        if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS){
-            event.accept(ModItems.BLUEHAWAII_SPAWN_EGG);
+        if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {
             event.accept(ModItems.DUVILLAGER_SPAWN_EGG);
             event.accept(ModItems.CRIMINAL_DUVILLAGER_SPAWN_EGG);
-            event.accept(ModItems.DUWANG_SPAWN_EGG);
             event.accept(ModItems.MIRACLE_SPAWN_EGG);
             event.accept(ModItems.STONEINSECT_SPAWN_EGG);
         }

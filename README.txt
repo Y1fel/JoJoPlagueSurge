@@ -7,7 +7,7 @@ Minecraft Forge 1.20.1 mod
 Basic Info:
 - Mod ID: jojoplaguesurge
 - Mod Name: JoJoPlagueSurge
-- Version: 1.0.3
+- Version: 1.0.4
 - Author: Y1fel
 - Java: 17
 - Forge: 47.4.10
@@ -30,6 +30,7 @@ Current Main Content:
 - Miracle entity
 - TrackingTornado entity
 - Bloody Tooth item
+- Mysterious Potion test item
 - Stand summon discs
 
 Current Key Bindings:
@@ -37,10 +38,11 @@ Current Key Bindings:
 - X: Skill 2
 - C: Skill 3
 - N: Summon / recall stand
+- U: Apply Step Up III for 2 seconds
 
 The HUD displays the player's real bound keys instead of hard-coded text.
 
-1.0.3 Update Notes:
+1.0.4 Update Notes:
 - Fixed the bug where stand contact could incorrectly damage players.
 - OZONE skill 1 range is centered on the caster and checks players within a
   16-block radius.
@@ -58,6 +60,12 @@ The HUD displays the player's real bound keys instead of hard-coded text.
 - Criminal DuVillager uses the same random appearance pool as normal villagers.
 - Criminal DuVillager drops jcraft:sinners_soul on death.
 - Added a dedicated Criminal DuVillager spawn egg.
+- Added a Mysterious Potion test item using the vanilla empty bottle texture.
+- The Mysterious Potion tooltip now renders in blue italic text.
+- Pressing U now applies More Potion Effects Step Up III for 2 seconds to the
+  pressing player.
+- U key Step Up cooldown is tracked per player, and trying to use it during
+  cooldown shows the remaining seconds.
 - DuWang skill 2 now grants:
   Solid Shield,
   Resistance II for 15 seconds,
@@ -75,6 +83,9 @@ Gameplay Notes:
 - DuWang skill 1 summons a tracking tornado from the active stand.
 - DuWang skill 2 is a self-defense buff skill.
 - BlueHawaii skill flow is tied to Bloody Tooth and target locking.
+- Players who pick up Bloody Tooth stay marked even after dropping it.
+- BlueHawaii skill 3 now clears all player marks and lock data that came from
+  Bloody Tooth pickup detection.
 - OZONE supports direct skill casting and a separate house-area effect.
 - Criminal DuVillager is separate from normal DuVillager and is intended for
   controlled spawning via its own spawn egg.
@@ -93,7 +104,7 @@ Important Dependencies:
 Optional / Related Notes:
 - Some logic will try to use the More Potion Effects mod if it is present.
 - Runtime lookup is used for effects such as imprison, heavy,
-  injury_outburst, bleeding, and solid_shield.
+  injury_outburst, bleeding, solid_shield, and step_up.
 - This allows the project to be edited even if More Potion Effects is not set
   up as a strict compile-time requirement for every environment.
 
