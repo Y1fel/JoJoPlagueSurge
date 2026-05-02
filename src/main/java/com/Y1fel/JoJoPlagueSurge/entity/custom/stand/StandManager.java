@@ -66,7 +66,6 @@ public final class StandManager {
     public static void toggleOwnedStand(ServerPlayer player) {
         StandType ownedType = getOwnedStandType(player);
         if (ownedType == null) {
-            player.displayClientMessage(Component.literal("你当前没有替身所有权"), true);
             return;
         }
 

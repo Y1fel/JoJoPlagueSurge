@@ -35,31 +35,34 @@ public final class OzoneSkillLogic {
     public static final String TAG_SKILL_1 = "ozone_target_1";
     public static final String TAG_SKILL_2 = "ozone_target_2";
     public static final String TAG_SKILL_3 = "ozone_target_3";
+    // 新增：伤势爆发标记Tag
+    private static final String TAG_HOUSE_INJURY_OUTBURST_APPLIED = "jojoplaguesurge.ozone.house_injury_outburst_applied";
 
     private static final String SKILL_1_ACTIVE_UNTIL = "jojoplaguesurge.ozone.skill_1_active_until";
     private static final String SKILL_2_ACTIVE_UNTIL = "jojoplaguesurge.ozone.skill_2_active_until";
     private static final String SKILL_1_INJURY_OUTBURST_APPLIED = "jojoplaguesurge.ozone.skill_1_injury_outburst_applied";
-    private static final String SKILL_1_BLEEDING_APPLIED = "jojoplaguesurge.ozone.skill_1_bleeding_applied";
+    private static final String SKILL_1_DARKNESS_APPLIED = "jojoplaguesurge.ozone.skill_1_darkness_applied";
+    private static final String LEGACY_SKILL_1_BLEEDING_APPLIED = "jojoplaguesurge.ozone.skill_1_bleeding_applied";
     private static final String HOUSE_RECALL_COOLDOWN_UNTIL = "jojoplaguesurge.ozone.house_recall_cooldown_until";
 
     private static final int SKILL_1_DURATION_TICKS = 20 * 60;
     private static final int SKILL_1_COOLDOWN_TICKS = 20 * 60;
     private static final int SKILL_2_DURATION_TICKS = 20 * 2;
     private static final int SKILL_2_COOLDOWN_TICKS = 20 * 30;
-    private static final int SKILL_EFFECT_REFRESH_TICKS = 40;
     private static final int SKILL_1_INJURY_OUTBURST_START_TICKS = 20 * 10;
     private static final int SKILL_1_INJURY_OUTBURST_DURATION_TICKS = 20 * 50;
-    private static final int SKILL_1_BLEEDING_START_TICKS = 20 * 45;
+    private static final int SKILL_1_DARKNESS_START_TICKS = 20 * 45;
     private static final int SKILL_1_HEAVY_DURATION_TICKS = SKILL_1_DURATION_TICKS;
-    private static final int SKILL_1_BLEEDING_DURATION_TICKS = SKILL_1_DURATION_TICKS - SKILL_1_BLEEDING_START_TICKS;
-    private static final int HOUSE_RECALL_COOLDOWN_TICKS = 20 * 60 * 60 * 2;
-    private static final int IMPRISON_DURATION_TICKS = 20 * 2;
+    private static final int SKILL_1_DARKNESS_DURATION_TICKS = SKILL_1_DURATION_TICKS - SKILL_1_DARKNESS_START_TICKS;
+    private static final int HOUSE_RECALL_COOLDOWN_TICKS = 20 * 60 * 30;
+    // 修改1：禁锢时长改为5秒（20*5）
+    private static final int IMPRISON_DURATION_TICKS = 20 * 5;
     private static final int HOUSE_EFFECT_REFRESH_TICKS = 40;
     private static final int HOUSE_HEAVY_1_START_TICKS = 0;
     private static final int HOUSE_HEAVY_2_START_TICKS = 20 * 10;
     private static final int HOUSE_INJURY_OUTBURST_START_TICKS = 20 * 15;
     private static final int HOUSE_INJURY_OUTBURST_DURATION_TICKS = 20 * 30;
-    private static final int HOUSE_BLEEDING_START_TICKS = 20 * 25;
+    private static final int HOUSE_DARKNESS_START_TICKS = 20 * 25;
     private static final int HOUSE_IMPRISON_START_TICKS = 20 * 150;
 
     private static final double SKILL_PLAYER_RADIUS = 16.0D;
@@ -167,6 +170,8 @@ public final class OzoneSkillLogic {
         );
         if (previous != null) {
             clearEntityTags(player.server, previous.trackedEntities().keySet(), TAG_SKILL_3);
+            // 新增：清除之前的伤势爆发标记
+            clearHouseInjuryOutburstTags(player.server, previous.trackedEntities().keySet());
         }
 
         player.displayClientMessage(Component.literal("OZONE 房子已启动"), true);
@@ -182,6 +187,8 @@ public final class OzoneSkillLogic {
         ActiveHouseZone zone = ACTIVE_HOUSES.remove(owner);
         if (zone != null && zone.pos().equals(pos)) {
             clearEntityTags(serverLevel.getServer(), zone.trackedEntities().keySet(), TAG_SKILL_3);
+            // 新增：清除伤势爆发标记和效果
+            clearHouseInjuryOutburstTags(serverLevel.getServer(), zone.trackedEntities().keySet());
             ServerPlayer ownerPlayer = serverLevel.getServer().getPlayerList().getPlayer(owner);
             if (ownerPlayer != null) {
                 startHouseRecallCooldown(ownerPlayer);
@@ -211,7 +218,8 @@ public final class OzoneSkillLogic {
         SKILL_1_TARGETS.put(player.getUUID(), targets);
         player.getPersistentData().putLong(SKILL_1_ACTIVE_UNTIL, player.level().getGameTime() + SKILL_1_DURATION_TICKS);
         player.getPersistentData().remove(SKILL_1_INJURY_OUTBURST_APPLIED);
-        player.getPersistentData().remove(SKILL_1_BLEEDING_APPLIED);
+        player.getPersistentData().remove(SKILL_1_DARKNESS_APPLIED);
+        player.getPersistentData().remove(LEGACY_SKILL_1_BLEEDING_APPLIED);
         applySkill1InitialEffects(player.server, targets);
         player.displayClientMessage(Component.literal("附近玩家已获得 ozone_target_1"), true);
     }
@@ -245,6 +253,8 @@ public final class OzoneSkillLogic {
         ActiveHouseZone zone = ACTIVE_HOUSES.remove(player.getUUID());
         if (zone != null) {
             clearEntityTags(player.server, zone.trackedEntities().keySet(), TAG_SKILL_3);
+            // 新增：清除伤势爆发标记和效果
+            clearHouseInjuryOutburstTags(player.server, zone.trackedEntities().keySet());
         }
 
         HOUSE_OWNERS.remove(pos.asLong());
@@ -258,7 +268,7 @@ public final class OzoneSkillLogic {
         }
 
         startHouseRecallCooldown(player);
-        player.displayClientMessage(Component.literal("OZONE 房子已回收，房子效果进入 2 小时冷却"), true);
+        player.displayClientMessage(Component.literal("OZONE 房子已回收，房子效果进入 30 分钟冷却"), true);
     }
 
     private static void startHouseRecallCooldown(ServerPlayer player) {
@@ -286,7 +296,8 @@ public final class OzoneSkillLogic {
         player.getPersistentData().remove(activeUntilKey);
         if (SKILL_1_ACTIVE_UNTIL.equals(activeUntilKey)) {
             player.getPersistentData().remove(SKILL_1_INJURY_OUTBURST_APPLIED);
-            player.getPersistentData().remove(SKILL_1_BLEEDING_APPLIED);
+            player.getPersistentData().remove(SKILL_1_DARKNESS_APPLIED);
+            player.getPersistentData().remove(LEGACY_SKILL_1_BLEEDING_APPLIED);
         }
         SkillCooldowns.startCooldown(player, cooldownId, cooldownTicks);
     }
@@ -310,10 +321,11 @@ public final class OzoneSkillLogic {
             player.getPersistentData().putBoolean(SKILL_1_INJURY_OUTBURST_APPLIED, true);
         }
 
-        if (elapsedTicks >= SKILL_1_BLEEDING_START_TICKS
-                && !player.getPersistentData().getBoolean(SKILL_1_BLEEDING_APPLIED)) {
-            applySkill1DelayedEffect(player.server, targetIds, "bleeding", SKILL_1_BLEEDING_DURATION_TICKS);
-            player.getPersistentData().putBoolean(SKILL_1_BLEEDING_APPLIED, true);
+        if (elapsedTicks >= SKILL_1_DARKNESS_START_TICKS
+                && !player.getPersistentData().getBoolean(SKILL_1_DARKNESS_APPLIED)) {
+            applySkill1Darkness(player.server, targetIds, SKILL_1_DARKNESS_DURATION_TICKS);
+            player.getPersistentData().putBoolean(SKILL_1_DARKNESS_APPLIED, true);
+            player.getPersistentData().remove(LEGACY_SKILL_1_BLEEDING_APPLIED);
         }
     }
 
@@ -326,6 +338,8 @@ public final class OzoneSkillLogic {
         BlockPos pos = zone.pos();
         if (!player.serverLevel().getBlockState(pos).is(ModBlocks.OZONE.get())) {
             clearEntityTags(player.server, zone.trackedEntities().keySet(), TAG_SKILL_3);
+            // 新增：清除伤势爆发标记和效果
+            clearHouseInjuryOutburstTags(player.server, zone.trackedEntities().keySet());
             ACTIVE_HOUSES.remove(player.getUUID());
             HOUSE_OWNERS.remove(pos.asLong());
             return;
@@ -340,10 +354,10 @@ public final class OzoneSkillLogic {
                         && entity != player
                         && !(entity instanceof StandEntity)
                         && entity.distanceToSqr(
-                                pos.getX() + 0.5D,
-                                pos.getY() + 0.5D,
-                                pos.getZ() + 0.5D
-                        ) <= HOUSE_RADIUS * HOUSE_RADIUS
+                        pos.getX() + 0.5D,
+                        pos.getY() + 0.5D,
+                        pos.getZ() + 0.5D
+                ) <= HOUSE_RADIUS * HOUSE_RADIUS
         );
 
         Set<UUID> currentIds = new HashSet<>();
@@ -352,15 +366,25 @@ public final class OzoneSkillLogic {
             entity.addTag(TAG_SKILL_3);
             UUID entityId = entity.getUUID();
             long enteredAt = trackedEntities.computeIfAbsent(entityId, unused -> now);
-            applyHouseEffects(entity, Math.max(0L, now - enteredAt));
+            // 修改2：重构三技能效果应用逻辑
+            applyHouseEffectsOptimized(entity, now - enteredAt, entityId);
             currentIds.add(entityId);
         }
 
+        // 处理离开范围的实体
         for (UUID uuid : new HashSet<>(trackedEntities.keySet())) {
             if (!currentIds.contains(uuid)) {
                 Entity entity = findEntityByUuid(player.server, uuid);
                 if (entity != null) {
                     entity.removeTag(TAG_SKILL_3);
+                    // 新增：移除伤势爆发标记和效果
+                    if (entity instanceof LivingEntity living) {
+                        living.removeTag(TAG_HOUSE_INJURY_OUTBURST_APPLIED);
+                        MobEffect injuryOutburst = findMorePotionEffect("injury_outburst");
+                        if (injuryOutburst != null) {
+                            living.removeEffect(injuryOutburst);
+                        }
+                    }
                 }
                 trackedEntities.remove(uuid);
             }
@@ -436,6 +460,23 @@ public final class OzoneSkillLogic {
         }
     }
 
+    // 新增：清除伤势爆发标记和效果
+    private static void clearHouseInjuryOutburstTags(MinecraftServer server, Set<UUID> entityIds) {
+        if (entityIds == null || entityIds.isEmpty()) {
+            return;
+        }
+        MobEffect injuryOutburst = findMorePotionEffect("injury_outburst");
+        for (UUID uuid : entityIds) {
+            Entity entity = findEntityByUuid(server, uuid);
+            if (entity instanceof LivingEntity living) {
+                living.removeTag(TAG_HOUSE_INJURY_OUTBURST_APPLIED);
+                if (injuryOutburst != null) {
+                    living.removeEffect(injuryOutburst);
+                }
+            }
+        }
+    }
+
     @Nullable
     private static Entity findEntityByUuid(MinecraftServer server, UUID uuid) {
         for (ServerLevel level : server.getAllLevels()) {
@@ -464,21 +505,27 @@ public final class OzoneSkillLogic {
         );
     }
 
-    private static void applyHouseEffects(LivingEntity entity, long elapsedTicks) {
+    // 修改2：重构后的三技能效果应用方法
+    private static void applyHouseEffectsOptimized(LivingEntity entity, long elapsedTicks, UUID entityId) {
+        // Heavy效果（保持原有刷新逻辑，因为是持续效果）
         if (elapsedTicks >= HOUSE_HEAVY_2_START_TICKS) {
             applyMorePotionEffect(entity, "heavy", HOUSE_EFFECT_REFRESH_TICKS, 1);
         } else if (elapsedTicks >= HOUSE_HEAVY_1_START_TICKS) {
             applyMorePotionEffect(entity, "heavy", HOUSE_EFFECT_REFRESH_TICKS, 0);
         }
 
-        if (elapsedTicks >= HOUSE_INJURY_OUTBURST_START_TICKS) {
+        // 伤势爆发：仅在满足时间条件且未添加过标记时一次性添加
+        if (elapsedTicks >= HOUSE_INJURY_OUTBURST_START_TICKS && !entity.getTags().contains(TAG_HOUSE_INJURY_OUTBURST_APPLIED)) {
             applyMorePotionEffect(entity, "injury_outburst", HOUSE_INJURY_OUTBURST_DURATION_TICKS, 0);
+            entity.addTag(TAG_HOUSE_INJURY_OUTBURST_APPLIED);
         }
 
-        if (elapsedTicks >= HOUSE_BLEEDING_START_TICKS) {
-            applyMorePotionEffect(entity, "bleeding", HOUSE_EFFECT_REFRESH_TICKS, 0);
+        // 黑暗效果（保持原有刷新逻辑）
+        if (elapsedTicks >= HOUSE_DARKNESS_START_TICKS) {
+            applyDarknessEffect(entity, HOUSE_EFFECT_REFRESH_TICKS, 0);
         }
 
+        // 禁锢效果（保持原有逻辑）
         if (elapsedTicks >= HOUSE_IMPRISON_START_TICKS) {
             MobEffect imprison = findImprisonEffect();
             if (imprison != null) {
@@ -505,6 +552,15 @@ public final class OzoneSkillLogic {
         }
     }
 
+    private static void applySkill1Darkness(MinecraftServer server, Set<UUID> targetIds, int durationTicks) {
+        for (UUID uuid : targetIds) {
+            Entity entity = findEntityByUuid(server, uuid);
+            if (entity instanceof LivingEntity living) {
+                applyDarknessEffect(living, durationTicks, 0);
+            }
+        }
+    }
+
     private static void applyMorePotionEffect(LivingEntity entity, String effectId, int durationTicks, int amplifier) {
         if (durationTicks <= 0) {
             return;
@@ -514,6 +570,14 @@ public final class OzoneSkillLogic {
         if (effect != null) {
             entity.addEffect(new MobEffectInstance(effect, durationTicks, amplifier, false, false, false));
         }
+    }
+
+    private static void applyDarknessEffect(LivingEntity entity, int durationTicks, int amplifier) {
+        if (durationTicks <= 0) {
+            return;
+        }
+
+        entity.addEffect(new MobEffectInstance(MobEffects.DARKNESS, durationTicks, amplifier, false, false, false));
     }
 
     private record ActiveHouseZone(BlockPos pos, Map<UUID, Long> trackedEntities, long activatedAt) {

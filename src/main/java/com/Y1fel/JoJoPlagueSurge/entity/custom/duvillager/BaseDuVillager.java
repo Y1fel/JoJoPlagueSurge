@@ -32,4 +32,14 @@ public abstract class BaseDuVillager extends PathfinderMob {
     public void readAdditionalSaveData(@NotNull CompoundTag tag){
         super.readAdditionalSaveData(tag);
     }
+
+    @Override
+    public boolean removeWhenFarAway(double distanceToClosestPlayer) {
+        return false;
+    }
+
+    @Override
+    public boolean requiresCustomPersistence() {
+        return true;
+    }
 }
