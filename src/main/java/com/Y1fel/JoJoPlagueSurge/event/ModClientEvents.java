@@ -47,6 +47,7 @@ public class ModClientEvents {
         event.register(ModKeyMappings.DUWANG_SKILL_3);
         event.register(ModKeyMappings.STAND_SUMMON_TOGGLE);
         event.register(ModKeyMappings.STEP_UP_TEST);
+        event.register(ModKeyMappings.CRESCENT_MOON_SKILL);
     }
 
 }

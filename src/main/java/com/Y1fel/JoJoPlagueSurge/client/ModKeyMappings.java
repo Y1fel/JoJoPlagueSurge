@@ -49,6 +49,14 @@ public class ModKeyMappings {
             CATEGORY
     );
 
+    public static final KeyMapping CRESCENT_MOON_SKILL = new KeyMapping(
+            "key." + ModEntrance.MODID + ".crescent_moon_skill",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_Z,
+            CATEGORY
+    );
+
 
     private ModKeyMappings() {
     }

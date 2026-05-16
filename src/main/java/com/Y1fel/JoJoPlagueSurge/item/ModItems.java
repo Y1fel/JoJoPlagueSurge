@@ -23,6 +23,8 @@ public class ModItems {
     public static final RegistryObject<Item> BLUEHAWAII_STAND_DISC =
             ITEMS.register("bluehawaii_stand_disc", () -> new StandDiscItem(new Item.Properties().stacksTo(1),
                     StandType.BLUE_HAWAII));
+    public static final RegistryObject<Item> CRESCENT_MOON_DISC =
+            ITEMS.register("crescent_moon_disc", () -> new CrescentMoonDiscItem(new Item.Properties().stacksTo(1)));
     public static final RegistryObject<Item> SPIRIT_VISION_POTION =
             ITEMS.register("spirit_vision_potion", () -> new SpiritVisionPotionItem(new Item.Properties()));
     public static final RegistryObject<Item> SKILL_1_TEST_POTION =

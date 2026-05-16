@@ -1,25 +1,30 @@
 package com.Y1fel.JoJoPlagueSurge.network.packet;
 
 import com.Y1fel.JoJoPlagueSurge.Config;
+import com.Y1fel.JoJoPlagueSurge.entity.ModEntities;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.bluehawaii.BlueHawaiiEntity;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.duvillager.DuVillagerEntity;
-import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandManager;
 import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandEntity;
+import com.Y1fel.JoJoPlagueSurge.entity.custom.stand.StandManager;
 import com.Y1fel.JoJoPlagueSurge.item.ModItems;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
@@ -45,9 +50,13 @@ public final class BlueHawaiiSkillLogic {
     private static final String ANCHOR_Z = "jojoplaguesurge.bluehawaii.anchor_z";
 
     private static final int RELEASE_COOLDOWN_TICKS = 20 * 60 * 20;
+    private static final int SUMMONED_DUVILLAGER_COUNT = 20;
+    private static final int SUMMON_POSITION_ATTEMPTS = 12;
     private static final double HUNT_RADIUS = 256.0D;
     private static final double CHASE_SPEED = 1.35D;
     private static final double TEST_LOCK_RANGE = 32.0D;
+    private static final double SUMMON_MIN_RADIUS = 2.5D;
+    private static final double SUMMON_MAX_RADIUS = 8.0D;
 
     private BlueHawaiiSkillLogic() {
     }
@@ -150,6 +159,7 @@ public final class BlueHawaiiSkillLogic {
         tag.putDouble(ANCHOR_X, player.getX());
         tag.putDouble(ANCHOR_Y, player.getY());
         tag.putDouble(ANCHOR_Z, player.getZ());
+        summonDuVillagersForHunt(player, target);
         player.displayClientMessage(Component.literal("蓝色夏威夷已开始追猎"), true);
     }
 
@@ -243,25 +253,81 @@ public final class BlueHawaiiSkillLogic {
         List<DuVillagerEntity> villagers = owner.serverLevel().getEntitiesOfClass(
                 DuVillagerEntity.class,
                 owner.getBoundingBox().inflate(HUNT_RADIUS),
-                entity -> entity.isAlive()
-                        && entity != target
+                entity -> entity.isAlive() && entity != target
         );
 
         for (DuVillagerEntity villager : villagers) {
-            if (target instanceof LivingEntity livingTarget) {
-                villager.setTarget(livingTarget);
-                villager.getNavigation().moveTo(livingTarget, CHASE_SPEED);
-                villager.getLookControl().setLookAt(livingTarget, 30.0F, 30.0F);
+            directVillagerToTarget(villager, target);
+        }
+    }
 
-                double attackReach = villager.getBbWidth() + livingTarget.getBbWidth() + 1.5D;
-                if (villager.distanceToSqr(livingTarget) <= attackReach * attackReach) {
-                    villager.doHurtTarget(livingTarget);
-                }
-            } else {
-                villager.setTarget(null);
-                villager.getNavigation().moveTo(target.getX(), target.getY(), target.getZ(), CHASE_SPEED);
-                villager.getLookControl().setLookAt(target, 30.0F, 30.0F);
+    private static void summonDuVillagersForHunt(ServerPlayer owner, Entity target) {
+        ServerLevel level = owner.serverLevel();
+        for (int i = 0; i < SUMMONED_DUVILLAGER_COUNT; i++) {
+            DuVillagerEntity villager = ModEntities.DUVILLAGER.get().create(level);
+            if (villager == null) {
+                continue;
             }
+
+            BlockPos spawnPos = findSummonPos(level, owner);
+            villager.moveTo(
+                    spawnPos.getX() + 0.5D,
+                    spawnPos.getY(),
+                    spawnPos.getZ() + 0.5D,
+                    level.random.nextFloat() * 360.0F,
+                    0.0F
+            );
+            villager.finalizeSpawn(level, level.getCurrentDifficultyAt(spawnPos), MobSpawnType.MOB_SUMMONED, null, null);
+            level.addFreshEntity(villager);
+            directVillagerToTarget(villager, target);
+        }
+    }
+
+    private static BlockPos findSummonPos(ServerLevel level, ServerPlayer owner) {
+        BlockPos ownerPos = owner.blockPosition();
+        for (int attempt = 0; attempt < SUMMON_POSITION_ATTEMPTS; attempt++) {
+            double angle = level.random.nextDouble() * (Math.PI * 2.0D);
+            double distance = SUMMON_MIN_RADIUS + level.random.nextDouble() * (SUMMON_MAX_RADIUS - SUMMON_MIN_RADIUS);
+            int x = Mth.floor(owner.getX() + Math.cos(angle) * distance);
+            int z = Mth.floor(owner.getZ() + Math.sin(angle) * distance);
+
+            for (int yOffset = 3; yOffset >= -3; yOffset--) {
+                BlockPos feetPos = new BlockPos(x, ownerPos.getY() + yOffset, z);
+                if (canSpawnDuVillagerAt(level, feetPos)) {
+                    return feetPos;
+                }
+            }
+        }
+
+        BlockPos fallback = ownerPos.above();
+        return canSpawnDuVillagerAt(level, fallback) ? fallback : ownerPos;
+    }
+
+    private static boolean canSpawnDuVillagerAt(ServerLevel level, BlockPos feetPos) {
+        BlockPos headPos = feetPos.above();
+        BlockPos belowPos = feetPos.below();
+        BlockState feetState = level.getBlockState(feetPos);
+        BlockState headState = level.getBlockState(headPos);
+        BlockState belowState = level.getBlockState(belowPos);
+        return feetState.canBeReplaced()
+                && headState.canBeReplaced()
+                && belowState.isSolidRender(level, belowPos);
+    }
+
+    private static void directVillagerToTarget(DuVillagerEntity villager, Entity target) {
+        if (target instanceof LivingEntity livingTarget) {
+            villager.setTarget(livingTarget);
+            villager.getNavigation().moveTo(livingTarget, CHASE_SPEED);
+            villager.getLookControl().setLookAt(livingTarget, 30.0F, 30.0F);
+
+            double attackReach = villager.getBbWidth() + livingTarget.getBbWidth() + 1.5D;
+            if (villager.distanceToSqr(livingTarget) <= attackReach * attackReach) {
+                villager.doHurtTarget(livingTarget);
+            }
+        } else {
+            villager.setTarget(null);
+            villager.getNavigation().moveTo(target.getX(), target.getY(), target.getZ(), CHASE_SPEED);
+            villager.getLookControl().setLookAt(target, 30.0F, 30.0F);
         }
     }
 

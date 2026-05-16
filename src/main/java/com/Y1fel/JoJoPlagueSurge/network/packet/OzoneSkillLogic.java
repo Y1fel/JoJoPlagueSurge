@@ -47,7 +47,7 @@ public final class OzoneSkillLogic {
 
     private static final int SKILL_1_DURATION_TICKS = 20 * 60;
     private static final int SKILL_1_COOLDOWN_TICKS = 20 * 60;
-    private static final int SKILL_2_DURATION_TICKS = 20 * 2;
+    private static final int SKILL_2_DURATION_TICKS = 20 * 6;
     private static final int SKILL_2_COOLDOWN_TICKS = 20 * 30;
     private static final int SKILL_1_INJURY_OUTBURST_START_TICKS = 20 * 10;
     private static final int SKILL_1_INJURY_OUTBURST_DURATION_TICKS = 20 * 50;

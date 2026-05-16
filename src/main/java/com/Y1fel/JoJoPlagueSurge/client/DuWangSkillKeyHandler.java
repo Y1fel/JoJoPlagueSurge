@@ -4,6 +4,7 @@ import com.Y1fel.JoJoPlagueSurge.ModEntrance;
 import com.Y1fel.JoJoPlagueSurge.network.ModNetwork;
 import com.Y1fel.JoJoPlagueSurge.network.packet.C2SApplyStepUpPacket;
 import com.Y1fel.JoJoPlagueSurge.network.packet.C2SToggleOwnedStandPacket;
+import com.Y1fel.JoJoPlagueSurge.network.packet.C2SUseCrescentMoonSkillPacket;
 import com.Y1fel.JoJoPlagueSurge.network.packet.C2SUseDuWangSkillPacket;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
@@ -36,6 +37,10 @@ public class DuWangSkillKeyHandler {
 
         while (ModKeyMappings.STEP_UP_TEST.consumeClick()) {
             ModNetwork.CHANNEL.sendToServer(new C2SApplyStepUpPacket());
+        }
+
+        while (ModKeyMappings.CRESCENT_MOON_SKILL.consumeClick()) {
+            ModNetwork.CHANNEL.sendToServer(new C2SUseCrescentMoonSkillPacket());
         }
 
     }

@@ -13,6 +13,7 @@ public final class SkillCooldowns {
     public static final String OZONE_SKILL_1 = "ozone_skill_1";
     public static final String OZONE_SKILL_2 = "ozone_skill_2";
     public static final String STEP_UP_TEST = "step_up_test";
+    public static final String CRESCENT_MOON_SKILL = "crescent_moon_skill";
 
     private static final String PREFIX = "jojoplaguesurge.cooldown.";
     private static final String UNTIL_SUFFIX = ".until";

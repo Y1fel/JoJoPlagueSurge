@@ -27,6 +27,7 @@ public class ModCreativeModeTabs {
                         pOutput.accept(ModItems.BLOODY_TOOTH.get());
                         pOutput.accept(ModItems.STAND_DISC.get());
                         pOutput.accept(ModItems.BLUEHAWAII_STAND_DISC.get());
+                        pOutput.accept(ModItems.CRESCENT_MOON_DISC.get());
                         pOutput.accept(ModItems.SPIRIT_VISION_POTION.get());
                         pOutput.accept(ModItems.SKILL_1_TEST_POTION.get());
                     }).build());

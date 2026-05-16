@@ -12,8 +12,8 @@ public final class DuWangSkillCatalog {
     public static final int TRACKING_TORNADO_ID = 1;
     public static final int HURRICANE_BARRIER_ID = 2;
 
-    public static final int TRACKING_TORNADO_COOLDOWN_TICKS = 20 * 15;
-    public static final int HURRICANE_BARRIER_COOLDOWN_TICKS = 20 * 60;
+    public static final int TRACKING_TORNADO_COOLDOWN_TICKS = 20 * 10;
+    public static final int HURRICANE_BARRIER_COOLDOWN_TICKS = 20 * 55;
 
     private DuWangSkillCatalog() {
     }
